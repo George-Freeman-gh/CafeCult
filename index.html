@@ -8,13 +8,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   
-  <link rel="apple-touch-icon" href="./logo-solid.jpg">
-  <link rel="icon" type="image/jpeg" href="./logo-solid.jpg">
+  <link rel="apple-touch-icon" href="./logo.jpg">
+  <link rel="icon" type="image/jpeg" href="./logo.jpg">
   
   <meta property="og:title" content="Café Cult">
   <meta property="og:description" content="La app del corito café.">
-  <meta property="og:image" content="https://YOUR_VERCEL_LINK.vercel.app/logo-solid.jpg">
-  <meta property="og:url" content="https://YOUR_VERCEL_LINK.vercel.app/">
+  <meta property="og:image" content="https://cafecult.vercel.app/logo.jpg">
+  <meta property="og:url" content="https://cafecult.vercel.app/">
   <meta property="og:type" content="website">
   
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
@@ -41,6 +41,7 @@
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+    /* Cinematic Logo Physics */
     @keyframes smoothReveal {
       0% { opacity: 0; transform: translateY(15px); filter: blur(8px); }
       100% { opacity: 1; transform: translateY(0px); filter: blur(0px); }
@@ -89,7 +90,7 @@
       <div class="space-y-3 flex flex-col items-center">
         <div class="premium-logo-container">
           <div class="premium-glow-orb"></div>
-          <img src="./logo.png" alt="Café Cult Crest" class="premium-logo">
+          <img src="./trans-logo.png" alt="Café Cult Crest" class="premium-logo">
         </div>
         <h1 class="text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-zinc-50 to-zinc-400">CAFÉ CULT</h1>
         <p class="text-zinc-500 text-sm font-medium tracking-wide">La app del corito café.</p>
@@ -133,7 +134,7 @@
         <div class="flex justify-between items-start">
           <div>
             <h3 id="modal-cafe-name" class="text-2xl font-black tracking-tight text-zinc-100">Cafe Name</h3>
-            <p class="text-zinc-500 text-xs font-medium mt-0.5">Global Cult Summary</p>
+            <p class="text-zinc-500 text-xs font-medium mt-0.5">Global Council Summary</p>
           </div>
           <button id="close-modal-btn" class="text-zinc-400 text-xs font-bold bg-zinc-800/80 active:bg-zinc-700 px-4 py-2 rounded-full cursor-pointer transition-colors">Done</button>
         </div>
@@ -142,7 +143,7 @@
         <div id="community-scores" class="grid grid-cols-2 gap-2.5 bg-zinc-950/80 p-4 rounded-2xl border border-zinc-800/40 shadow-inner"></div>
         
         <div class="space-y-2.5 pt-1">
-          <h4 class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase">Cult Consensus</h4>
+          <h4 class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase">Council Verdicts</h4>
           <div id="council-verdicts-list" class="flex gap-3 overflow-x-auto pb-1 ios-scroll hide-scrollbar snap-x snap-mandatory"></div>
         </div>
 
@@ -205,8 +206,7 @@
           <button id="close-admin-btn" class="text-zinc-400 text-xs font-bold bg-zinc-900 active:bg-zinc-800 px-4 py-2 rounded-full cursor-pointer transition-colors border border-zinc-800">Close</button>
         </div>
       </div>
-      <div class="flex-1 ios-scroll hide-scrollbar pt-6 space-y-4" id="admin-petitions-list">
-        </div>
+      <div class="flex-1 ios-scroll hide-scrollbar pt-6 space-y-4" id="admin-petitions-list"></div>
     </div>
   </div>
   
@@ -241,7 +241,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-    import { getFirestore, collection, getDocs, doc, setDoc, addDoc, deleteDoc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, setDoc, addDoc, deleteDoc, updateDoc, query, orderBy, deleteField } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAZ70ALdG7SIew7YfKNYN0gAivNjh9LD9E",
@@ -287,6 +287,7 @@
     const openAddModalBtn = document.getElementById('open-add-modal-btn');
     const closeAddModalBtn = document.getElementById('close-add-modal-btn');
     const submitCafeBtn = document.getElementById('submit-cafe-btn');
+    const newCafeNameInput = document.getElementById('new-cafe-name');
     
     const petitionModal = document.getElementById('petition-modal');
     const openPetitionModalBtn = document.getElementById('open-petition-modal-btn');
@@ -297,6 +298,7 @@
     const adminModal = document.getElementById('admin-modal');
     const closeAdminBtn = document.getElementById('close-admin-btn');
     const adminPetitionsList = document.getElementById('admin-petitions-list');
+    
     const photoInput = document.getElementById('photo-input');
     const addPhotoTrigger = document.getElementById('add-photo-trigger');
     const photoGalleryList = document.getElementById('photo-gallery-list');
@@ -311,13 +313,8 @@
         authScreen.classList.add('hidden');
         appScreen.classList.remove('hidden');
         userGreeting.textContent = `Welcome, ${user.displayName || 'Acolyte'}`;
-        
-        if (user.uid === ADMIN_UID) {
-          adminPanelBtn.classList.remove('hidden');
-        } else {
-          adminPanelBtn.classList.add('hidden');
-        }
-
+        if (user.uid === ADMIN_UID) adminPanelBtn.classList.remove('hidden');
+        else adminPanelBtn.classList.add('hidden');
         loadAppDashboard();
       } else {
         authScreen.classList.remove('hidden');
@@ -330,18 +327,15 @@
       try { await signInWithPopup(auth, provider); } 
       catch (err) { alert("Login failed: " + err.message); }
     });
-
     signoutBtn.addEventListener('click', () => signOut(auth));
 
     async function loadAppDashboard() {
       try {
         const cafeSnap = await getDocs(collection(db, 'cafes'));
         allCafesData = [];
-
         for (let cafeDoc of cafeSnap.docs) {
           const rawData = cafeDoc.data();
           if (rawData.isDeleted === true) continue; 
-
           const cafeData = { id: cafeDoc.id, ...rawData, ratings: {} };
           const ratingsSnap = await getDocs(collection(db, `cafes/${cafeDoc.id}/ratings`));
           ratingsSnap.forEach(rDoc => { cafeData.ratings[rDoc.id] = rDoc.data(); });
@@ -356,28 +350,15 @@
     function calculateAverages(ratingsObject) {
       const totals = { espresso: 0, cappuccino: 0, hotMatcha: 0, icedMatcha: 0 };
       const counts = { espresso: 0, cappuccino: 0, hotMatcha: 0, icedMatcha: 0 };
-      
       Object.values(ratingsObject).forEach(userRating => {
         metrics.forEach(m => {
-          if (userRating[m.id] !== undefined) {
-            totals[m.id] += parseFloat(userRating[m.id]);
-            counts[m.id]++;
-          }
+          if (userRating[m.id] !== undefined) { totals[m.id] += parseFloat(userRating[m.id]); counts[m.id]++; }
         });
       });
-
-      const averages = {};
-      let absoluteSum = 0;
-      let absoluteCount = 0;
-
+      const averages = {}; let absoluteSum = 0; let absoluteCount = 0;
       metrics.forEach(m => {
-        if (counts[m.id] > 0) {
-          averages[m.id] = totals[m.id] / counts[m.id];
-          absoluteSum += averages[m.id];
-          absoluteCount++;
-        }
+        if (counts[m.id] > 0) { averages[m.id] = totals[m.id] / counts[m.id]; absoluteSum += averages[m.id]; absoluteCount++; }
       });
-      
       averages._overallSortScore = absoluteCount > 0 ? (absoluteSum / absoluteCount) : 0;
       return averages;
     }
@@ -385,22 +366,17 @@
     function renderCafeCards() {
       cafeList.innerHTML = '';
       if (allCafesData.length === 0) {
-        cafeList.innerHTML = `<p class="text-zinc-500 text-sm text-center py-8">No locations verified yet.</p>`;
-        return;
+        cafeList.innerHTML = `<p class="text-zinc-500 text-sm text-center py-8">No locations verified yet.</p>`; return;
       }
-
       allCafesData.sort((a, b) => {
-        const avgA = calculateAverages(a.ratings)._overallSortScore;
-        const avgB = calculateAverages(b.ratings)._overallSortScore;
-        return avgB - avgA;
+        return calculateAverages(b.ratings)._overallSortScore - calculateAverages(a.ratings)._overallSortScore;
       });
 
       allCafesData.forEach((cafe, index) => {
         const averages = calculateAverages(cafe.ratings);
         const card = document.createElement('div');
         card.className = "bg-zinc-900 border border-zinc-800/80 p-5 rounded-2xl space-y-4 active:bg-zinc-900/40 active:scale-[0.99] active:border-zinc-700/80 transition-all duration-100 cursor-pointer shadow-md";
-        const rankColors = ["text-amber-400 bg-amber-500/10 border-amber-500/20", "text-zinc-300 bg-zinc-300/10 border-zinc-300/20", "text-amber-700 bg-amber-700/10 border-amber-700/20"];
-        const rankBadgeClass = index < 3 ? rankColors[index] : "text-zinc-500 bg-zinc-800/20 border-zinc-800/30";
+        const rankBadgeClass = index < 3 ? ["text-amber-400 bg-amber-500/10 border-amber-500/20", "text-zinc-300 bg-zinc-300/10 border-zinc-300/20", "text-amber-700 bg-amber-700/10 border-amber-700/20"][index] : "text-zinc-500 bg-zinc-800/20 border-zinc-800/30";
         const ratersCount = Object.keys(cafe.ratings).length;
 
         let cardHTML = `
@@ -415,7 +391,6 @@
           </div>
           <div class="grid grid-cols-2 gap-2 text-xs">
         `;
-
         metrics.forEach(m => {
           const score = averages[m.id] ? averages[m.id].toFixed(1) : null;
           cardHTML += `
@@ -466,28 +441,19 @@
           const initial = name.charAt(0).toUpperCase();
           const isMe = uid === myUid;
           const nameDisplay = isMe ? 'You' : name;
-          
           let metricsHtml = '';
           metrics.forEach(m => {
-            const val = r[m.id];
-            if (val !== undefined) {
-               const icon = m.label.split(' ')[0]; 
-               metricsHtml += `<div class="bg-zinc-950/60 rounded px-1.5 py-1 flex justify-between items-center border border-zinc-800/30"><span class="text-[10px]">${icon}</span><span class="text-zinc-300 font-bold">${parseFloat(val).toFixed(1)}</span></div>`;
+            if (r[m.id] !== undefined) {
+               metricsHtml += `<div class="bg-zinc-950/60 rounded px-1.5 py-1 flex justify-between items-center border border-zinc-800/30"><span class="text-[10px]">${m.label.split(' ')[0]}</span><span class="text-zinc-300 font-bold">${parseFloat(r[m.id]).toFixed(1)}</span></div>`;
             }
           });
-
-          const highlightClass = isMe ? 'border-amber-500/20 bg-amber-500/5' : 'border-zinc-800/50 bg-zinc-900/60';
-          const avatarClass = isMe ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-zinc-800 text-zinc-400 border-zinc-700/50';
-
           verdictsList.innerHTML += `
-            <div class="flex-shrink-0 w-[140px] snap-start ${highlightClass} border rounded-2xl p-3 flex flex-col gap-2.5 shadow-sm">
+            <div class="flex-shrink-0 w-[140px] snap-start ${isMe ? 'border-amber-500/20 bg-amber-500/5' : 'border-zinc-800/50 bg-zinc-900/60'} border rounded-2xl p-3 flex flex-col gap-2.5 shadow-sm">
               <div class="flex items-center gap-2 border-b border-zinc-800/40 pb-2">
-                <div class="w-6 h-6 rounded-full ${avatarClass} text-[10px] font-black flex items-center justify-center border">${initial}</div>
+                <div class="w-6 h-6 rounded-full ${isMe ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-zinc-800 text-zinc-400 border-zinc-700/50'} text-[10px] font-black flex items-center justify-center border">${initial}</div>
                 <span class="text-xs font-bold ${isMe ? 'text-amber-400' : 'text-zinc-200'} truncate">${nameDisplay}</span>
               </div>
-              <div class="grid grid-cols-2 gap-1.5 text-[10px] font-medium text-zinc-500">
-                ${metricsHtml}
-              </div>
+              <div class="grid grid-cols-2 gap-1.5 text-[10px] font-medium text-zinc-500">${metricsHtml}</div>
             </div>
           `;
         });
@@ -498,19 +464,31 @@
       const sliderContainer = document.getElementById('metric-sliders');
       sliderContainer.innerHTML = '';
       metrics.forEach(m => {
-        const val = myCurrentRatings[m.id] !== undefined ? myCurrentRatings[m.id] : 3.0;
+        const val = myCurrentRatings[m.id] !== undefined ? myCurrentRatings[m.id] : 0; 
+        const isUnrated = val === 0;
+        
         const wrap = document.createElement('div');
         wrap.className = "space-y-1.5 bg-zinc-950/60 p-3.5 rounded-2xl border border-zinc-800/30 shadow-inner";
         wrap.innerHTML = `
           <div class="flex justify-between text-xs font-semibold tracking-wide">
             <label class="text-zinc-400">${m.label.toUpperCase()}</label>
-            <span id="val-${m.id}" class="font-black text-amber-400 text-sm">${parseFloat(val).toFixed(1)}</span>
+            <span id="val-${m.id}" class="${isUnrated ? 'text-zinc-500 italic' : 'font-black text-amber-400'} text-sm">
+              ${isUnrated ? 'Unrated' : parseFloat(val).toFixed(1)}
+            </span>
           </div>
-          <input type="range" id="input-${m.id}" min="1" max="5" step="0.5" value="${val}" 
-            class="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-zinc-100">
+          <input type="range" id="input-${m.id}" min="0" max="5" step="0.5" value="${val}" class="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-zinc-100">
         `;
+        
         wrap.querySelector('input').addEventListener('input', (e) => {
-          document.getElementById(`val-${m.id}`).innerText = parseFloat(e.target.value).toFixed(1);
+          const displaySpan = document.getElementById(`val-${m.id}`);
+          const currentVal = parseFloat(e.target.value);
+          if (currentVal === 0) {
+            displaySpan.innerText = 'Unrated';
+            displaySpan.className = 'text-sm text-zinc-500 italic';
+          } else {
+            displaySpan.innerText = currentVal.toFixed(1);
+            displaySpan.className = 'text-sm font-black text-amber-400';
+          }
         });
         sliderContainer.appendChild(wrap);
       });
@@ -522,213 +500,118 @@
       try {
         const querySnap = await getDocs(query(collection(db, `cafes/${cafeId}/photos`), orderBy('createdAt', 'desc')));
         photoGalleryList.innerHTML = '';
-        if (querySnap.empty) {
-          photoGalleryList.innerHTML = `<div class="text-[10px] text-zinc-600 italic flex items-center justify-center py-10 pl-2">No shots loaded yet.</div>`;
-          return;
-        }
+        if (querySnap.empty) { photoGalleryList.innerHTML = `<div class="text-[10px] text-zinc-600 italic flex items-center justify-center py-10 pl-2">No shots loaded yet.</div>`; return; }
         querySnap.forEach(pDoc => {
           const data = pDoc.data();
-          const photoId = pDoc.id;
-          const isOwner = data.uid === auth.currentUser.uid;
           const frame = document.createElement('div');
           frame.className = "flex-shrink-0 w-24 h-24 rounded-2xl bg-zinc-950 border border-zinc-800/60 overflow-hidden active:scale-95 transition-transform duration-100 cursor-pointer snap-start shadow-md relative group";
-          let deleteBtnHTML = '';
-          if (isOwner) {
-            deleteBtnHTML = `
-              <button class="delete-photo-btn absolute top-1.5 right-1.5 w-6 h-6 bg-black/60 backdrop-blur-md border border-zinc-700/50 text-zinc-300 rounded-full flex items-center justify-center active:bg-red-500/90 active:text-white transition-colors z-10 shadow-sm" aria-label="Delete photo">
-                <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-              </button>
-            `;
-          }
           frame.innerHTML = `
             <img src="${data.url}" alt="Drink captured by ${data.userName}" class="w-full h-full object-cover">
-            <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-1 px-1.5 text-center text-[8px] text-zinc-400 font-bold truncate">
-              ${data.userName.split(' ')[0]}
-            </div>
-            ${deleteBtnHTML}
+            <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-1 px-1.5 text-center text-[8px] text-zinc-400 font-bold truncate">${data.userName.split(' ')[0]}</div>
+            ${data.uid === auth.currentUser.uid ? `<button class="delete-photo-btn absolute top-1.5 right-1.5 w-6 h-6 bg-black/60 backdrop-blur-md border border-zinc-700/50 text-zinc-300 rounded-full flex items-center justify-center shadow-sm"><svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : ''}
           `;
           frame.addEventListener('click', async (e) => {
             if (e.target.closest('.delete-photo-btn')) {
               e.stopPropagation(); 
-              if (confirm("Permanently remove this photo from the gallery?")) {
-                try {
-                  await deleteDoc(doc(db, `cafes/${cafeId}/photos`, photoId));
-                  await loadCafeGallery(cafeId);
-                } catch (err) { alert("Delete failed: " + err.message); }
+              if (confirm("Permanently remove this photo?")) {
+                try { await deleteDoc(doc(db, `cafes/${cafeId}/photos`, pDoc.id)); await loadCafeGallery(cafeId); } 
+                catch (err) { alert("Delete failed: " + err.message); }
               }
-            } else {
-              openLightbox(data.url, `Shot by ${data.userName}`);
-            }
+            } else { openLightbox(data.url, `Shot by ${data.userName}`); }
           });
           photoGalleryList.appendChild(frame);
         });
-      } catch (err) {
-        photoGalleryList.innerHTML = `<div class="text-red-500/50 text-[9px] py-10">Sync Error</div>`;
-      }
+      } catch (err) { photoGalleryList.innerHTML = `<div class="text-red-500/50 text-[9px] py-10">Sync Error</div>`; }
     }
 
     addPhotoTrigger.addEventListener('click', () => photoInput.click());
     photoInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file || !currentCafeId) return;
-      const originalButtonContent = addPhotoTrigger.innerHTML;
-      addPhotoTrigger.disabled = true;
-      addPhotoTrigger.innerHTML = `<div class="w-4 h-4 border-2 border-zinc-600 border-t-zinc-300 rounded-full animate-spin"></div>`;
+      const file = e.target.files[0]; if (!file || !currentCafeId) return;
+      const originalBtn = addPhotoTrigger.innerHTML; addPhotoTrigger.disabled = true; addPhotoTrigger.innerHTML = `<div class="w-4 h-4 border-2 border-zinc-600 border-t-zinc-300 rounded-full animate-spin"></div>`;
       const reader = new FileReader();
       reader.onload = function(event) {
         const img = new Image();
         img.onload = async function() {
-          const canvas = document.createElement('canvas');
-          let width = img.width;
-          let height = img.height;
-          const max_size = 800;
-          if (width > height) {
-            if (width > max_size) { height *= max_size / width; width = max_size; }
-          } else {
-            if (height > max_size) { width *= max_size / height; height = max_size; }
-          }
-          canvas.width = width; canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+          const canvas = document.createElement('canvas'); let w = img.width; let h = img.height; const m = 800;
+          if (w > h) { if (w > m) { h *= m / w; w = m; } } else { if (h > m) { w *= m / h; h = m; } }
+          canvas.width = w; canvas.height = h; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
           try {
             await addDoc(collection(db, `cafes/${currentCafeId}/photos`), {
-              url: compressedBase64, userName: auth.currentUser.displayName || 'Acolyte', uid: auth.currentUser.uid, createdAt: new Date().toISOString()
-            });
-            await loadCafeGallery(currentCafeId);
-          } catch (err) { alert("Upload permission failed: " + err.message); } 
-          finally { addPhotoTrigger.disabled = false; addPhotoTrigger.innerHTML = originalButtonContent; photoInput.value = ''; }
-        };
-        img.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
+              url: canvas.toDataURL('image/jpeg', 0.7), userName: auth.currentUser.displayName || 'Acolyte', uid: auth.currentUser.uid, createdAt: new Date().toISOString()
+            }); await loadCafeGallery(currentCafeId);
+          } catch (err) { alert("Upload failed: " + err.message); } 
+          finally { addPhotoTrigger.disabled = false; addPhotoTrigger.innerHTML = originalBtn; photoInput.value = ''; }
+        }; img.src = event.target.result;
+      }; reader.readAsDataURL(file);
     });
 
-    function openLightbox(src, captionText) {
-      lightboxImg.src = src; lightboxCaption.textContent = captionText; lightboxModal.classList.remove('hidden');
+    function openLightbox(src, caption) {
+      lightboxImg.src = src; lightboxCaption.textContent = caption; lightboxModal.classList.remove('hidden');
       setTimeout(() => { lightboxImg.classList.remove('scale-95'); lightboxImg.classList.add('scale-100'); }, 50);
     }
-    function closeLightbox() {
+    closeLightboxBtn.addEventListener('click', () => {
       lightboxImg.classList.remove('scale-100'); lightboxImg.classList.add('scale-95');
       setTimeout(() => { lightboxModal.classList.add('hidden'); lightboxImg.src = ''; }, 150);
-    }
-    closeLightboxBtn.addEventListener('click', closeLightbox);
-    lightboxBackplate.addEventListener('click', closeLightbox);
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        if (!lightboxModal.classList.contains('hidden')) closeLightbox();
-      }
     });
 
     closeModalBtn.addEventListener('click', () => ratingModal.classList.add('hidden'));
 
     saveRatingBtn.addEventListener('click', async () => {
       if (!currentCafeId) return;
-      const myUid = auth.currentUser.uid;
       const payload = { updatedAt: new Date().toISOString(), userName: auth.currentUser.displayName || 'Acolyte' };
-      metrics.forEach(m => { payload[m.id] = parseFloat(document.getElementById(`input-${m.id}`).value); });
+      
+      metrics.forEach(m => { 
+        const val = parseFloat(document.getElementById(`input-${m.id}`).value);
+        if (val === 0) {
+          payload[m.id] = deleteField();
+        } else {
+          payload[m.id] = val; 
+        }
+      });
+
       try {
-        saveRatingBtn.disabled = true; saveRatingBtn.textContent = "Syncing Cult Matrix...";
-        await setDoc(doc(db, `cafes/${currentCafeId}/ratings`, myUid), payload, { merge: true });
+        saveRatingBtn.disabled = true; saveRatingBtn.textContent = "Syncing...";
+        await setDoc(doc(db, `cafes/${currentCafeId}/ratings`, auth.currentUser.uid), payload, { merge: true });
         ratingModal.classList.add('hidden'); await loadAppDashboard(); 
-      } catch (err) { alert("Failed to commit updates: " + err.message); } 
+      } catch (err) { alert("Error: " + err.message); } 
       finally { saveRatingBtn.disabled = false; saveRatingBtn.textContent = "Lock In Scores"; }
     });
 
-    // ==================== ✨ THE EXCOMMUNICATION PROTOCOL ====================
-
-    openPetitionModalBtn.addEventListener('click', () => {
-      document.getElementById('petition-reason').value = '';
-      petitionModal.classList.remove('hidden');
-    });
-
-    const closePetition = () => petitionModal.classList.add('hidden');
-    cancelPetitionBtn.addEventListener('click', closePetition);
-    petitionBackplate.addEventListener('click', closePetition);
-
+    // ADMIN / PETITION LOGIC
+    openPetitionModalBtn.addEventListener('click', () => { document.getElementById('petition-reason').value = ''; petitionModal.classList.remove('hidden'); });
+    cancelPetitionBtn.addEventListener('click', () => petitionModal.classList.add('hidden'));
     submitPetitionBtn.addEventListener('click', async () => {
-      const reason = document.getElementById('petition-reason').value.trim() || "No reason provided.";
-      const cafe = allCafesData.find(c => c.id === currentCafeId);
-      
+      const reason = document.getElementById('petition-reason').value.trim() || "No reason.";
       try {
-        submitPetitionBtn.textContent = "Submitting...";
         submitPetitionBtn.disabled = true;
-        
         await setDoc(doc(db, 'petitions', currentCafeId), {
-          cafeId: currentCafeId,
-          cafeName: cafe.name,
-          requestedBy: auth.currentUser.displayName || "Acolyte",
-          requestorUid: auth.currentUser.uid,
-          reason: reason,
-          timestamp: new Date().toISOString()
+          cafeId: currentCafeId, cafeName: allCafesData.find(c => c.id === currentCafeId).name, requestedBy: auth.currentUser.displayName || "Acolyte", reason: reason
         });
-
-        closePetition();
-        openPetitionModalBtn.textContent = "Petition Sent to the Cult Leader";
-        openPetitionModalBtn.disabled = true;
-      } catch (err) {
-        alert("Failed to send petition: " + err.message);
-      } finally {
-        submitPetitionBtn.textContent = "Submit Petition";
-        submitPetitionBtn.disabled = false;
-      }
+        petitionModal.classList.add('hidden'); openPetitionModalBtn.textContent = "Petition Sent"; openPetitionModalBtn.disabled = true;
+      } catch (err) { alert("Error: " + err.message); } finally { submitPetitionBtn.disabled = false; }
     });
-
+    
     adminPanelBtn.addEventListener('click', async () => {
-      adminModal.classList.remove('hidden');
-      adminPetitionsList.innerHTML = `<p class="text-zinc-500 text-xs text-center py-10">Accessing the Leader's files...</p>`;
-      
+      adminModal.classList.remove('hidden'); adminPetitionsList.innerHTML = `<p class="text-zinc-500 text-xs text-center py-10">Accessing...</p>`;
       try {
-        const pSnap = await getDocs(collection(db, 'petitions'));
-        adminPetitionsList.innerHTML = '';
-        
-        if (pSnap.empty) {
-          adminPetitionsList.innerHTML = `<p class="text-zinc-600 text-sm italic text-center py-10">No pending petitions.</p>`;
-          return;
-        }
-
+        const pSnap = await getDocs(collection(db, 'petitions')); adminPetitionsList.innerHTML = '';
+        if (pSnap.empty) { adminPetitionsList.innerHTML = `<p class="text-zinc-600 text-sm italic text-center py-10">No pending petitions.</p>`; return; }
         pSnap.forEach(pDoc => {
-          const data = pDoc.data();
-          const card = document.createElement('div');
-          card.className = "bg-zinc-900 border border-zinc-800 rounded-2xl p-4 space-y-3";
-          
-          card.innerHTML = `
-            <div>
-              <h4 class="text-zinc-100 font-bold">${data.cafeName}</h4>
-              <p class="text-[10px] text-amber-500 font-mono mt-0.5">Flagged by: ${data.requestedBy}</p>
-            </div>
-            <p class="text-xs text-zinc-400 bg-zinc-950 p-3 rounded-xl border border-zinc-800/50">"${data.reason}"</p>
-            <div class="flex gap-2 pt-1">
-              <button class="reject-btn flex-1 bg-zinc-800 text-zinc-400 text-xs font-bold py-2.5 rounded-xl">Dismiss</button>
-              <button class="approve-btn flex-1 bg-red-500/20 text-red-500 border border-red-500/30 text-xs font-bold py-2.5 rounded-xl">Excommunicate</button>
-            </div>
-          `;
-
-          card.querySelector('.reject-btn').addEventListener('click', async () => {
-            card.style.opacity = '0.5';
-            await deleteDoc(doc(db, 'petitions', pDoc.id));
-            card.remove();
-          });
-
-          card.querySelector('.approve-btn').addEventListener('click', async () => {
-            card.style.opacity = '0.5';
-            await updateDoc(doc(db, 'cafes', data.cafeId), { isDeleted: true });
-            await deleteDoc(doc(db, 'petitions', pDoc.id));
-            card.remove();
-            loadAppDashboard(); 
-          });
-
+          const data = pDoc.data(); const card = document.createElement('div'); card.className = "bg-zinc-900 border border-zinc-800 rounded-2xl p-4 space-y-3";
+          card.innerHTML = `<div><h4 class="text-zinc-100 font-bold">${data.cafeName}</h4><p class="text-[10px] text-amber-500 font-mono mt-0.5">Flagged by: ${data.requestedBy}</p></div><p class="text-xs text-zinc-400 bg-zinc-950 p-3 rounded-xl border border-zinc-800/50">"${data.reason}"</p><div class="flex gap-2 pt-1"><button class="reject-btn flex-1 bg-zinc-800 text-zinc-400 text-xs font-bold py-2.5 rounded-xl">Dismiss</button><button class="approve-btn flex-1 bg-red-500/20 text-red-500 border border-red-500/30 text-xs font-bold py-2.5 rounded-xl">Excommunicate</button></div>`;
+          card.querySelector('.reject-btn').addEventListener('click', async () => { await deleteDoc(doc(db, 'petitions', pDoc.id)); card.remove(); });
+          card.querySelector('.approve-btn').addEventListener('click', async () => { await updateDoc(doc(db, 'cafes', data.cafeId), { isDeleted: true }); await deleteDoc(doc(db, 'petitions', pDoc.id)); card.remove(); loadAppDashboard(); });
           adminPetitionsList.appendChild(card);
         });
-      } catch (err) {
-        adminPetitionsList.innerHTML = `<p class="text-red-500 text-xs">Error loading files: ${err.message}</p>`;
-      }
+      } catch (err) { adminPetitionsList.innerHTML = `<p class="text-red-500 text-xs">Error: ${err.message}</p>`; }
     });
-
     closeAdminBtn.addEventListener('click', () => adminModal.classList.add('hidden'));
 
-    openAddModalBtn.addEventListener('click', () => {
-      newCafeNameInput.value = ''; addModal.classList.remove('hidden'); setTimeout(() => newCafeNameInput.focus(), 100); 
+    // NEW CAFE SUBMIT (Reverted to text-only)
+    openAddModalBtn.addEventListener('click', () => { 
+      newCafeNameInput.value = ''; 
+      addModal.classList.remove('hidden'); 
+      setTimeout(() => newCafeNameInput.focus(), 100); 
     });
     closeAddModalBtn.addEventListener('click', () => addModal.classList.add('hidden'));
 
@@ -737,10 +620,17 @@
       if (!name) return; 
       try {
         submitCafeBtn.disabled = true; submitCafeBtn.textContent = "Adding Location...";
-        await addDoc(collection(db, 'cafes'), { name: name });
-        addModal.classList.add('hidden'); await loadAppDashboard(); 
-      } catch (err) { alert("Failed to add location. Error: " + err.message); } 
-      finally { submitCafeBtn.disabled = false; submitCafeBtn.textContent = "Add Location"; }
+        await addDoc(collection(db, 'cafes'), { 
+          name: name,
+          isDeleted: false
+        });
+        addModal.classList.add('hidden'); 
+        await loadAppDashboard(); 
+      } catch (err) { 
+        alert("Failed to add location. Error: " + err.message); 
+      } finally { 
+        submitCafeBtn.disabled = false; submitCafeBtn.textContent = "Add Location"; 
+      }
     });
   </script>
 </body>
