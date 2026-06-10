@@ -180,7 +180,6 @@
       </div>
       
       <div class="flex-1 ios-scroll hide-scrollbar space-y-5" style="padding-bottom: max(var(--sab), 1rem);">
-        
         <div id="community-scores" class="grid grid-cols-2 gap-2.5 bg-zinc-950/80 p-4 rounded-2xl border border-zinc-800/40 shadow-inner"></div>
         
         <div class="space-y-2.5 pt-1">
@@ -202,6 +201,7 @@
 
         <div class="space-y-3 pt-3 border-t border-zinc-800/50">
           <h4 class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase">Cult Commentary</h4>
+          
           <div class="bg-zinc-950/60 border border-zinc-800/50 rounded-2xl p-3 flex flex-col gap-2 relative focus-within:border-zinc-700 transition-colors">
             <textarea id="comment-input" rows="1" placeholder="Leave your tasting notes..." class="w-full bg-transparent text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none resize-none hide-scrollbar overflow-hidden" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
             
@@ -219,14 +219,13 @@
               <button id="post-comment-btn" class="bg-amber-500 text-zinc-950 text-[10px] font-bold px-4 py-1.5 rounded-lg active:scale-95 transition-all cursor-pointer shadow-md disabled:opacity-50 disabled:active:scale-100">Post</button>
             </div>
           </div>
+
           <div id="comments-list" class="space-y-3 mt-4"></div>
         </div>
 
         <div class="space-y-4 pt-3 border-t border-zinc-800/50">
           <h4 class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase">Your Personal Assessment</h4>
-          
-          <div id="metric-stars-container" class="space-y-5"></div>
-          
+          <div class="space-y-3.5" id="metric-sliders"></div>
           <button id="save-rating-btn" class="w-full bg-zinc-50 text-zinc-950 font-bold py-4 rounded-2xl text-sm active:scale-[0.97] active:bg-zinc-200 transition-all duration-150 cursor-pointer shadow-lg mt-4">
             Lock In Scores
           </button>
@@ -317,7 +316,7 @@
         <div class="bg-zinc-950 border border-zinc-800/80 rounded-xl p-4 text-left text-sm text-zinc-300 space-y-3">
           <div class="space-y-1">
             <p class="font-bold text-zinc-100 flex items-center gap-1.5">
-              <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+              <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
               Safari (iPhone)
             </p>
             <p class="text-xs text-zinc-400 pl-6">1. Tap the <span class="text-amber-400 font-bold">Share</span> icon at the bottom.<br>2. Scroll down and tap <span class="text-amber-400 font-bold">Add to Home Screen</span>.</p>
@@ -367,38 +366,14 @@
     let currentCafeId = null;
     let allCafesData = [];
     let allUsersData = {}; 
-    let selectedCommentImageBase64 = null; 
-    let draftRatings = {}; // ✨ NEW: Stores live rating edits before locking in
+    let selectedCommentImageBase64 = null; // ✨ NEW: State for comment photo
 
-    // ✨ UPGRADED: Expanded Metrics Architecture
-    const metricCategories = [
-      {
-        id: 'drinks', label: '☕ Sacred Brews', short: 'Drinks', metrics: [
-          { id: 'espresso', label: '☕ Espresso', short: 'Espresso' },
-          { id: 'cappuccino', label: '🥛 Cappuccino', short: 'Cappuccino' },
-          { id: 'hotMatcha', label: '🍵 Matcha Latte', short: 'Matcha' }, 
-          { id: 'icedMatcha', label: '🧊 Iced Matcha', short: 'Iced Matcha' }
-        ]
-      },
-      {
-        id: 'desserts', label: '🍰 Sinful Treats', short: 'Desserts', metrics: [
-          { id: 'pastries', label: '🥐 Pastries/Croissants', short: 'Pastries' },
-          { id: 'cakes', label: '🍰 Cakes/Cheesecakes', short: 'Cakes' }
-        ]
-      },
-      {
-        id: 'service', label: '⚖️ Cult Environment', short: 'Service', metrics: [
-          { id: 'staff', label: '👥 Staff Vibes', short: 'Staff' },
-          { id: 'ambiance', label: '🕯️ Ambiance', short: 'Ambiance' },
-          { id: 'workability', label: '💻 Workability', short: 'Work' },
-          { id: 'wifi', label: '📶 Wifi Strength', short: 'Wifi' },
-          { id: 'speed', label: '⚡ Service Speed', short: 'Speed' }
-        ]
-      }
+    const metrics = [
+      { id: 'espresso', label: '☕ Espresso', short: 'Espresso' },
+      { id: 'cappuccino', label: '🥛 Cappuccino', short: 'Cappuccino' },
+      { id: 'hotMatcha', label: '🍵 Matcha Latte', short: 'Matcha Latte' }, 
+      { id: 'icedMatcha', label: '🧊 Iced Matcha', short: 'Iced Matcha' }
     ];
-    
-    // Flat map for easy lookup
-    const flattenedMetrics = metricCategories.flatMap(c => c.metrics);
 
     const authScreen = document.getElementById('auth-screen');
     const appScreen = document.getElementById('app-screen');
@@ -429,6 +404,7 @@
     const submitCafeBtn = document.getElementById('submit-cafe-btn');
     const newCafeNameInput = document.getElementById('new-cafe-name');
     
+    // ✨ NEW: Comment Elements
     const commentInput = document.getElementById('comment-input');
     const commentImagePreviewContainer = document.getElementById('comment-image-preview-container');
     const commentImagePreview = document.getElementById('comment-image-preview');
@@ -576,53 +552,20 @@
       }
     }
 
-    // ✨ UPGRADED: Averages algorithm processes metrics dynamically via categories
     function calculateAverages(ratingsObject) {
-      let catTotals = { drinks: 0, desserts: 0, service: 0 };
-      let catCounts = { drinks: 0, desserts: 0, service: 0 };
-      let metricTotals = {};
-      let metricCounts = {};
-
-      flattenedMetrics.forEach(m => { metricTotals[m.id] = 0; metricCounts[m.id] = 0; });
-
+      const totals = { espresso: 0, cappuccino: 0, hotMatcha: 0, icedMatcha: 0 };
+      const counts = { espresso: 0, cappuccino: 0, hotMatcha: 0, icedMatcha: 0 };
       Object.values(ratingsObject).forEach(userRating => {
-        metricCategories.forEach(cat => {
-          cat.metrics.forEach(m => {
-            if (userRating[m.id] !== undefined && userRating[m.id] > 0) {
-              metricTotals[m.id] += parseFloat(userRating[m.id]);
-              metricCounts[m.id]++;
-              catTotals[cat.id] += parseFloat(userRating[m.id]);
-              catCounts[cat.id]++;
-            }
-          });
+        metrics.forEach(m => {
+          if (userRating[m.id] !== undefined) { totals[m.id] += parseFloat(userRating[m.id]); counts[m.id]++; }
         });
       });
-
-      const catAverages = {};
-      let globalSum = 0;
-      let globalCount = 0;
-
-      metricCategories.forEach(cat => {
-        if (catCounts[cat.id] > 0) {
-          catAverages[cat.id] = catTotals[cat.id] / catCounts[cat.id];
-        } else {
-          catAverages[cat.id] = null;
-        }
+      const averages = {}; let absoluteSum = 0; let absoluteCount = 0;
+      metrics.forEach(m => {
+        if (counts[m.id] > 0) { averages[m.id] = totals[m.id] / counts[m.id]; absoluteSum += averages[m.id]; absoluteCount++; }
       });
-
-      const metricAverages = {};
-      flattenedMetrics.forEach(m => {
-        if (metricCounts[m.id] > 0) {
-          metricAverages[m.id] = metricTotals[m.id] / metricCounts[m.id];
-          globalSum += metricAverages[m.id];
-          globalCount++;
-        } else {
-          metricAverages[m.id] = null;
-        }
-      });
-
-      const overall = globalCount > 0 ? (globalSum / globalCount) : 0;
-      return { overall, catAverages, metricAverages };
+      averages._overallSortScore = absoluteCount > 0 ? (absoluteSum / absoluteCount) : 0;
+      return averages;
     }
 
     function renderPersonalDecrees() {
@@ -644,9 +587,9 @@
         card.className = "bg-zinc-900/60 border border-zinc-800/50 p-4 rounded-2xl flex flex-col gap-2.5 cursor-pointer active:scale-[0.98] transition-all shadow-sm";
         
         let chipsHtml = '';
-        flattenedMetrics.forEach(m => {
+        metrics.forEach(m => {
           if (myRating[m.id] !== undefined && parseFloat(myRating[m.id]) > 0) {
-            chipsHtml += `<span class="px-2 py-1 bg-zinc-950 border border-zinc-800/80 rounded-lg text-[10px] font-bold text-amber-400/90 shadow-inner whitespace-nowrap">${m.label.split(' ')[0]} ${parseFloat(myRating[m.id]).toFixed(1)}</span>`;
+            chipsHtml += `<span class="px-2 py-1 bg-zinc-950 border border-zinc-800/80 rounded-lg text-[10px] font-bold text-amber-400/90 shadow-inner">${m.label.split(' ')[0]} ${parseFloat(myRating[m.id]).toFixed(1)}</span>`;
           }
         });
 
@@ -674,44 +617,39 @@
         cafeList.innerHTML = `<p class="text-zinc-500 text-sm text-center py-8">No locations verified yet.</p>`; return;
       }
       allCafesData.sort((a, b) => {
-        return calculateAverages(b.ratings).overall - calculateAverages(a.ratings).overall;
+        return calculateAverages(b.ratings)._overallSortScore - calculateAverages(a.ratings)._overallSortScore;
       });
 
       allCafesData.forEach((cafe, index) => {
         const averages = calculateAverages(cafe.ratings);
         const card = document.createElement('div');
-        card.className = "bg-zinc-900 border border-zinc-800/80 p-5 rounded-2xl space-y-3 active:bg-zinc-900/40 active:scale-[0.99] active:border-zinc-700/80 transition-all duration-100 cursor-pointer shadow-md";
+        card.className = "bg-zinc-900 border border-zinc-800/80 p-5 rounded-2xl space-y-4 active:bg-zinc-900/40 active:scale-[0.99] active:border-zinc-700/80 transition-all duration-100 cursor-pointer shadow-md";
         const rankBadgeClass = index < 3 ? ["text-amber-400 bg-amber-500/10 border-amber-500/20", "text-zinc-300 bg-zinc-300/10 border-zinc-300/20", "text-amber-700 bg-amber-700/10 border-amber-700/20"][index] : "text-zinc-500 bg-zinc-800/20 border-zinc-800/30";
         const ratersCount = Object.keys(cafe.ratings).length;
 
-        // ✨ UPGRADED: Card UI reflects new categories and master score
-        card.innerHTML = `
-          <div class="flex justify-between items-center mb-1">
+        let cardHTML = `
+          <div class="flex justify-between items-center">
             <div class="flex items-center gap-2.5">
               <span class="text-[10px] font-black px-2 py-0.5 border rounded-md ${rankBadgeClass}">#${index + 1}</span>
               <h3 class="text-lg font-bold text-zinc-100 tracking-tight">${cafe.name}</h3>
             </div>
-            <div class="flex items-center gap-1 bg-amber-500/10 px-2 py-1 rounded-lg border border-amber-500/20">
-              <svg class="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-              <span class="font-black text-amber-400 text-xs">${averages.overall === 0 ? 'NEW' : averages.overall.toFixed(1)}</span>
-            </div>
+            <span class="text-[10px] font-bold tracking-wider uppercase px-2 py-1 bg-zinc-950 rounded-lg text-zinc-500 border border-zinc-900">
+              ${ratersCount} ${ratersCount === 1 ? 'Rating' : 'Ratings'}
+            </span>
           </div>
-          <p class="text-[9px] font-bold tracking-wider uppercase text-zinc-600 mb-2">${ratersCount} ${ratersCount === 1 ? 'Rating' : 'Ratings'}</p>
-          <div class="grid grid-cols-3 gap-2">
-            <div class="bg-zinc-950/50 rounded-xl p-2 text-center border border-zinc-900/80">
-              <p class="text-[9px] text-zinc-500 font-bold uppercase mb-0.5">Drinks</p>
-              <p class="text-xs font-black ${averages.catAverages.drinks ? 'text-zinc-200' : 'text-zinc-700 italic'}">${averages.catAverages.drinks ? averages.catAverages.drinks.toFixed(1) : '-'}</p>
-            </div>
-            <div class="bg-zinc-950/50 rounded-xl p-2 text-center border border-zinc-900/80">
-              <p class="text-[9px] text-zinc-500 font-bold uppercase mb-0.5">Desserts</p>
-              <p class="text-xs font-black ${averages.catAverages.desserts ? 'text-zinc-200' : 'text-zinc-700 italic'}">${averages.catAverages.desserts ? averages.catAverages.desserts.toFixed(1) : '-'}</p>
-            </div>
-            <div class="bg-zinc-950/50 rounded-xl p-2 text-center border border-zinc-900/80">
-              <p class="text-[9px] text-zinc-500 font-bold uppercase mb-0.5">Service</p>
-              <p class="text-xs font-black ${averages.catAverages.service ? 'text-zinc-200' : 'text-zinc-700 italic'}">${averages.catAverages.service ? averages.catAverages.service.toFixed(1) : '-'}</p>
-            </div>
-          </div>
+          <div class="grid grid-cols-2 gap-2 text-xs">
         `;
+        metrics.forEach(m => {
+          const score = averages[m.id] ? averages[m.id].toFixed(1) : null;
+          cardHTML += `
+            <div class="flex justify-between items-center bg-zinc-950/40 p-3 rounded-xl border border-zinc-900/60">
+              <span class="text-zinc-400 font-medium">${m.label}</span>
+              <span class="font-black ${score ? 'text-amber-400' : 'text-zinc-600 italic text-[11px]'}">${score || 'Unrated'}</span>
+            </div>
+          `;
+        });
+        cardHTML += `</div>`;
+        card.innerHTML = cardHTML;
         card.addEventListener('click', () => openRatingModal(cafe.id));
         cafeList.appendChild(card);
       });
@@ -722,78 +660,40 @@
       const cafe = allCafesData.find(c => c.id === cafeId);
       const myUid = auth.currentUser.uid;
       const myCurrentRatings = cafe.ratings[myUid] || {};
-      
-      // Seed our draft state
-      draftRatings = { ...myCurrentRatings };
 
       document.getElementById('modal-cafe-name').textContent = cafe.name;
 
       const averages = calculateAverages(cafe.ratings);
       const communityBox = document.getElementById('community-scores');
-      
-      // ✨ UPGRADED: 2x2 Grid for Top-Level Metrics
-      communityBox.innerHTML = `
-        <div class="text-center p-2 rounded-xl bg-amber-500/5 border border-amber-500/20 col-span-2">
-          <p class="text-[9px] text-amber-500 font-bold uppercase tracking-wider">Global Master Score</p>
-          <div class="flex items-center justify-center gap-1.5 mt-0.5">
-            <svg class="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-            <p class="text-xl font-black text-amber-400">${averages.overall === 0 ? 'None' : averages.overall.toFixed(1)}</p>
+      communityBox.innerHTML = '';
+      metrics.forEach(m => {
+        const score = averages[m.id] ? averages[m.id].toFixed(1) : null;
+        communityBox.innerHTML += `
+          <div class="text-center p-1.5 py-2 rounded-xl bg-zinc-900/40 border border-zinc-900">
+            <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">${m.short}</p>
+            <p class="text-base font-black ${score ? 'text-zinc-100' : 'text-zinc-700 italic text-sm mt-0.5'}">${score || 'None'}</p>
           </div>
-        </div>
-        <div class="text-center p-1.5 py-2 rounded-xl bg-zinc-900/40 border border-zinc-900 col-span-2 grid grid-cols-3 divide-x divide-zinc-800">
-           <div>
-             <p class="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Drinks</p>
-             <p class="text-sm font-black ${averages.catAverages.drinks ? 'text-zinc-200' : 'text-zinc-700 italic'}">${averages.catAverages.drinks ? averages.catAverages.drinks.toFixed(1) : '-'}</p>
-           </div>
-           <div>
-             <p class="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Desserts</p>
-             <p class="text-sm font-black ${averages.catAverages.desserts ? 'text-zinc-200' : 'text-zinc-700 italic'}">${averages.catAverages.desserts ? averages.catAverages.desserts.toFixed(1) : '-'}</p>
-           </div>
-           <div>
-             <p class="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">Service</p>
-             <p class="text-sm font-black ${averages.catAverages.service ? 'text-zinc-200' : 'text-zinc-700 italic'}">${averages.catAverages.service ? averages.catAverages.service.toFixed(1) : '-'}</p>
-           </div>
-        </div>
-      `;
+        `;
+      });
 
       const verdictsList = document.getElementById('council-verdicts-list');
       verdictsList.innerHTML = '';
       const ratingKeys = Object.keys(cafe.ratings);
-      
       let validCardsHtml = '';
 
       ratingKeys.forEach(uid => {
         const r = cafe.ratings[uid];
+        let metricsHtml = '';
         let hasValidRating = false;
 
-        // Ensure user actually rated something
-        flattenedMetrics.forEach(m => {
-          if (r[m.id] !== undefined && parseFloat(r[m.id]) > 0) hasValidRating = true;
+        metrics.forEach(m => {
+          if (r[m.id] !== undefined && parseFloat(r[m.id]) > 0) {
+             metricsHtml += `<div class="bg-zinc-950/60 rounded px-1.5 py-1 flex justify-between items-center border border-zinc-800/30"><span class="text-[10px]">${m.label.split(' ')[0]}</span><span class="text-zinc-300 font-bold">${parseFloat(r[m.id]).toFixed(1)}</span></div>`;
+             hasValidRating = true;
+          }
         });
 
         if (!hasValidRating) return; 
-
-        // Calculate their personal category scores to display
-        let userCatTotals = { drinks: 0, desserts: 0, service: 0 };
-        let userCatCounts = { drinks: 0, desserts: 0, service: 0 };
-        
-        metricCategories.forEach(cat => {
-            cat.metrics.forEach(m => {
-                if (r[m.id] !== undefined && r[m.id] > 0) {
-                    userCatTotals[cat.id] += parseFloat(r[m.id]);
-                    userCatCounts[cat.id]++;
-                }
-            });
-        });
-        
-        const formatCatScore = (catId, icon) => {
-            if (userCatCounts[catId] > 0) {
-                return `<div class="bg-zinc-950/60 rounded px-1.5 py-1 flex justify-between items-center border border-zinc-800/30"><span class="text-[10px]">${icon}</span><span class="text-zinc-300 font-bold">${(userCatTotals[catId]/userCatCounts[catId]).toFixed(1)}</span></div>`;
-            }
-            return '';
-        };
-
-        const metricsHtml = formatCatScore('drinks', '☕') + formatCatScore('desserts', '🍰') + formatCatScore('service', '⚖️');
 
         const uData = allUsersData[uid] || {};
         const name = uData.displayName || r.userName || 'Acolyte';
@@ -814,7 +714,7 @@
               ${avatarHtml}
               <span class="text-xs font-bold ${isMe ? 'text-amber-400' : 'text-zinc-200'} truncate">${nameDisplay}</span>
             </div>
-            <div class="grid grid-cols-1 gap-1.5 text-[10px] font-medium text-zinc-500">${metricsHtml}</div>
+            <div class="grid grid-cols-2 gap-1.5 text-[10px] font-medium text-zinc-500">${metricsHtml}</div>
           </div>
         `;
       });
@@ -825,6 +725,7 @@
         verdictsList.innerHTML = validCardsHtml;
       }
 
+      // ✨ NEW: Reset Comment Form
       commentInput.value = '';
       commentInput.style.height = ''; 
       selectedCommentImageBase64 = null;
@@ -834,97 +735,43 @@
       loadCafeGallery(cafeId);
       loadCafeComments(cafeId);
 
-      // ✨ UPGRADED: Generate the Interactive Star UI Arrays
-      const starContainer = document.getElementById('metric-stars-container');
-      starContainer.innerHTML = '';
-      
-      metricCategories.forEach(cat => {
-          let catHTML = `<div class="pt-4 border-t border-zinc-800/50 mt-4 first:mt-0 first:pt-0 first:border-0">
-              <h5 class="text-[10px] font-bold tracking-widest text-amber-500/50 uppercase mb-3">${cat.label}</h5>
-              <div class="space-y-3">`;
-              
-          cat.metrics.forEach(m => {
-              const val = draftRatings[m.id] || 0;
-              const isUnrated = val === 0;
-
-              let starsHTML = '';
-              for(let i=1; i<=5; i++) {
-                  starsHTML += `
-                    <div class="relative w-7 h-7 flex-shrink-0">
-                       <svg class="absolute inset-0 w-full h-full text-zinc-800 pointer-events-none" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-                       <div class="absolute inset-0 overflow-hidden text-amber-400 star-fill pointer-events-none transition-all duration-150 ease-out" data-star-index="${i}" style="width: 0%;">
-                          <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-                       </div>
-                       <div class="absolute inset-0 flex z-10">
-                          <div class="flex-1 h-full cursor-pointer rating-trigger" data-metric="${m.id}" data-val="${i - 0.5}"></div>
-                          <div class="flex-1 h-full cursor-pointer rating-trigger" data-metric="${m.id}" data-val="${i}"></div>
-                       </div>
-                    </div>
-                  `;
-              }
-
-              catHTML += `
-                  <div class="bg-zinc-950/60 p-3.5 rounded-2xl border border-zinc-800/30 shadow-inner flex flex-col gap-2 relative">
-                      <div class="flex justify-between items-center text-xs font-semibold tracking-wide">
-                          <label class="text-zinc-300">${m.label}</label>
-                          <span id="val-${m.id}" class="${isUnrated ? 'text-zinc-500 italic' : 'font-black text-amber-400'} text-sm transition-colors">
-                              ${isUnrated ? 'Unrated' : val.toFixed(1)}
-                          </span>
-                      </div>
-                      <div class="flex gap-1 justify-center py-1 w-full" id="stars-${m.id}">
-                          ${starsHTML}
-                      </div>
-                  </div>
-              `;
-          });
-          catHTML += `</div></div>`;
-          starContainer.insertAdjacentHTML('beforeend', catHTML);
-      });
-      
-      // Helper function to sync visual stars with data
-      window.updateStarVisuals = (metricId, value) => {
-          const container = document.getElementById(`stars-${metricId}`);
-          if(!container) return;
-          const fills = container.querySelectorAll('.star-fill');
-          fills.forEach((fill, idx) => {
-              const starVal = idx + 1;
-              if (value >= starVal) fill.style.width = '100%';
-              else if (value === starVal - 0.5) fill.style.width = '50%';
-              else fill.style.width = '0%';
-          });
-          const textNode = document.getElementById(`val-${metricId}`);
-          if(value === 0) {
-              textNode.textContent = 'Unrated';
-              textNode.className = 'text-zinc-500 italic text-sm transition-colors';
+      const sliderContainer = document.getElementById('metric-sliders');
+      sliderContainer.innerHTML = '';
+      metrics.forEach(m => {
+        const val = myCurrentRatings[m.id] !== undefined ? myCurrentRatings[m.id] : 0; 
+        const isUnrated = val === 0;
+        
+        const wrap = document.createElement('div');
+        wrap.className = "space-y-1.5 bg-zinc-950/60 p-3.5 rounded-2xl border border-zinc-800/30 shadow-inner";
+        wrap.innerHTML = `
+          <div class="flex justify-between text-xs font-semibold tracking-wide">
+            <label class="text-zinc-400">${m.label.toUpperCase()}</label>
+            <span id="val-${m.id}" class="${isUnrated ? 'text-zinc-500 italic' : 'font-black text-amber-400'} text-sm">
+              ${isUnrated ? 'Unrated' : parseFloat(val).toFixed(1)}
+            </span>
+          </div>
+          <input type="range" id="input-${m.id}" min="0" max="5" step="0.5" value="${val}" class="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-zinc-100">
+        `;
+        
+        wrap.querySelector('input').addEventListener('input', (e) => {
+          const displaySpan = document.getElementById(`val-${m.id}`);
+          const currentVal = parseFloat(e.target.value);
+          if (currentVal === 0) {
+            displaySpan.innerText = 'Unrated';
+            displaySpan.className = 'text-sm text-zinc-500 italic';
           } else {
-              textNode.textContent = value.toFixed(1);
-              textNode.className = 'font-black text-amber-400 text-sm transition-colors';
+            displaySpan.innerText = currentVal.toFixed(1);
+            displaySpan.className = 'text-sm font-black text-amber-400';
           }
-      };
-
-      // Set initial state visually
-      flattenedMetrics.forEach(m => updateStarVisuals(m.id, draftRatings[m.id] || 0));
-
-      // Attach click listeners to all new invisible half-star targets
-      document.querySelectorAll('.rating-trigger').forEach(trigger => {
-          trigger.addEventListener('click', (e) => {
-              const metricId = e.target.getAttribute('data-metric');
-              const val = parseFloat(e.target.getAttribute('data-val'));
-              // If tapping the exact same value, toggle it back to 0 (Unrated)
-              if (draftRatings[metricId] === val) {
-                  draftRatings[metricId] = 0;
-              } else {
-                  draftRatings[metricId] = val;
-              }
-              updateStarVisuals(metricId, draftRatings[metricId]);
-          });
+        });
+        sliderContainer.appendChild(wrap);
       });
       
       ratingModal.classList.remove('hidden');
       ratingModal.classList.add('flex'); 
     }
 
-    // ==================== CULT COMMENTARY LOGIC ====================
+    // ==================== ✨ CULT COMMENTARY LOGIC ====================
     triggerCommentPhoto.addEventListener('click', () => commentPhotoInput.click());
     
     commentPhotoInput.addEventListener('change', async (e) => {
@@ -936,7 +783,7 @@
         const img = new Image();
         img.onload = function() {
           const canvas = document.createElement('canvas'); 
-          let w = img.width; let h = img.height; const m = 800; 
+          let w = img.width; let h = img.height; const m = 800; // Standard gallery size
           if (w > h) { if (w > m) { h *= m / w; w = m; } } else { if (h > m) { w *= m / h; h = m; } }
           canvas.width = w; canvas.height = h; 
           const ctx = canvas.getContext('2d'); 
@@ -969,18 +816,20 @@
         let attachedPhotoId = null;
         let attachedPhotoUrl = null;
 
+        // Step 1: Upload image to gallery first (if attached)
         if (selectedCommentImageBase64) {
           const photoRef = await addDoc(collection(db, `cafes/${currentCafeId}/photos`), {
             url: selectedCommentImageBase64, 
             userName: auth.currentUser.displayName || 'Acolyte', 
             uid: auth.currentUser.uid, 
             createdAt: new Date().toISOString(),
-            isCommentAttachment: true 
+            isCommentAttachment: true // ✨ Prevents direct deletion from gallery
           });
           attachedPhotoId = photoRef.id;
           attachedPhotoUrl = selectedCommentImageBase64;
         }
 
+        // Step 2: Upload the Comment
         const uData = allUsersData[auth.currentUser.uid] || {};
         await addDoc(collection(db, `cafes/${currentCafeId}/comments`), {
           text: text,
@@ -992,6 +841,7 @@
           createdAt: new Date().toISOString()
         });
 
+        // Reset UI & Refresh
         commentInput.value = '';
         commentInput.style.height = ''; 
         selectedCommentImageBase64 = null;
@@ -1024,10 +874,11 @@
           const data = docSnap.data();
           const isMe = data.uid === auth.currentUser.uid;
           
+          let avatarHtml = '';
+          // Ensure we pull the freshest avatar if they recently changed it
           const freshUData = allUsersData[data.uid] || {};
           const photoToUse = freshUData.photoURL || data.userPhotoURL;
 
-          let avatarHtml;
           if (photoToUse) {
              avatarHtml = `<img src="${photoToUse}" class="w-6 h-6 rounded-full object-cover border ${isMe ? 'border-amber-500/50' : 'border-zinc-700/50'}">`;
           } else {
@@ -1070,6 +921,7 @@
                       const photoId = delBtn.getAttribute('data-photoid');
                       await deleteDoc(doc(db, `cafes/${cafeId}/comments`, docSnap.id));
                       
+                      // Also incinerate the image from the gallery
                       if (photoId) {
                          await deleteDoc(doc(db, `cafes/${cafeId}/photos`, photoId));
                          loadCafeGallery(cafeId); 
@@ -1098,6 +950,7 @@
           const frame = document.createElement('div');
           frame.className = "flex-shrink-0 w-24 h-24 rounded-2xl bg-zinc-950 border border-zinc-800/60 overflow-hidden active:scale-95 transition-transform duration-100 cursor-pointer snap-start shadow-md relative group";
           
+          // ✨ UPGRADED: Only show direct delete button if it wasn't attached to a comment.
           const isOwner = data.uid === auth.currentUser.uid;
           const showDeleteBtn = isOwner && !data.isCommentAttachment;
 
@@ -1137,7 +990,7 @@
               userName: auth.currentUser.displayName || 'Acolyte', 
               uid: auth.currentUser.uid, 
               createdAt: new Date().toISOString(),
-              isCommentAttachment: false
+              isCommentAttachment: false // Direct gallery uploads
             }); await loadCafeGallery(currentCafeId);
           } catch (err) { alert("Upload failed: " + err.message); } 
           finally { addPhotoTrigger.disabled = false; addPhotoTrigger.innerHTML = originalBtn; photoInput.value = ''; }
@@ -1159,7 +1012,6 @@
       ratingModal.classList.remove('flex');
     });
 
-    // ✨ UPGRADED: Self-cleaning save logic mapping from new Star engine
     saveRatingBtn.addEventListener('click', async () => {
       if (!currentCafeId) return;
       
@@ -1170,8 +1022,8 @@
       
       let hasAnyValidRating = false;
 
-      flattenedMetrics.forEach(m => { 
-        const val = draftRatings[m.id] || 0;
+      metrics.forEach(m => { 
+        const val = parseFloat(document.getElementById(`input-${m.id}`).value);
         if (val === 0) {
           payload[m.id] = deleteField();
         } else {
@@ -1250,6 +1102,7 @@
       }
     });
 
+    // ==================== INSTALL TUTORIAL POPUP ====================
     const installModal = document.getElementById('install-modal');
     const closeInstallModalBtn = document.getElementById('close-install-modal-btn');
 
