@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Café Cult</title>
+  
+  <!-- iOS Web App Specifics -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
+  <!-- Tailwind CSS Engine -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  
+  <style>
+    body {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      overscroll-behavior-y: contain;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-50 font-sans min-h-screen flex flex-col">
+
+  <!-- ==================== SCREEN 1: LOGIN ==================== -->
+  <div id="auth-screen" class="flex-1 flex flex-col justify-center px-6">
+    <div class="max-w-sm w-full mx-auto space-y-6 text-center">
+      <div class="space-y-2">
+        <h1 class="text-4xl font-black tracking-tight">Café Cult</h1>
+        <p class="text-zinc-400 text-sm">La app del corito café.</p>
+      </div>
+      <button id="login-btn" class="w-full bg-zinc-50 text-zinc-950 font-bold py-4 rounded-xl text-sm active:scale-[0.98] transition cursor-pointer shadow-lg">
+        Sign In with Google
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== SCREEN 2: MAIN DASHBOARD ==================== -->
+  <div id="app-screen" class="hidden flex-1 flex flex-col">
+    <header class="border-b border-zinc-900 px-6 py-5 flex justify-between items-center sticky top-0 bg-zinc-950/80 backdrop-blur-md z-10">
+      <h2 class="text-xl font-bold tracking-tight">The Leaderboard</h2>
+      <button id="signout-btn" class="text-xs text-zinc-400 border border-zinc-800 px-3 py-1.5 rounded-lg active:bg-zinc-900 cursor-pointer">Sign Out</button>
+    </header>
+
+    <main class="flex-1 px-6 py-4 space-y-4 overflow-y-auto" id="cafe-list">
+      <!-- Cafes will dynamically show up here from the database -->
+      <p class="text-zinc-500 text-sm text-center py-8">Connecting to database...</p>
+    </main>
+  </div>
+
+  <!-- ==================== SCREEN 3: RATING PANEL ==================== -->
+  <div id="rating-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-20 flex items-end justify-center">
+    <div class="bg-zinc-900 w-full rounded-t-3xl p-6 space-y-6 max-w-md border-t border-zinc-800 max-h-[90vh] overflow-y-auto pb-12">
+      <div class="flex justify-between items-start">
+        <div>
+          <h3 id="modal-cafe-name" class="text-xl font-bold">Cafe Name</h3>
+          <p class="text-zinc-400 text-xs mt-0.5">Group Aggregates</p>
+        </div>
+        <button id="close-modal-btn" class="text-zinc-400 text-sm font-medium bg-zinc-800 px-3 py-1.5 rounded-full cursor-pointer">Done</button>
+      </div>
+
+      <div id="community-scores" class="grid grid-cols-2 gap-3 bg-zinc-950 p-4 rounded-2xl border border-zinc-800/50">
+        <!-- Average scores display here -->
+      </div>
+
+      <hr class="border-zinc-800">
+
+      <div class="space-y-5">
+        <h4 class="text-sm font-semibold tracking-wide text-zinc-400 uppercase">Your Personal Score</h4>
+        <div class="space-y-4" id="metric-sliders">
+          <!-- Interactive Sliders will build dynamically here -->
+        </div>
+        <button id="save-rating-btn" class="w-full bg-zinc-50 text-zinc-950 font-semibold py-3.5 rounded-xl text-sm active:scale-[0.98] transition mt-2 cursor-pointer">
+          Lock In Scores
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== THE SYSTEM BRAINS ==================== -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+    // 👇 STEP 3.2: PASTE YOUR FIREBASE CONFIG OBJECT DIRECTLY BELOW THIS LINE 👇
+const firebaseConfig = {
+  apiKey: "AIzaSyAZ70ALdG7SIew7YfKNYN0gAivNjh9LD9E",
+  authDomain: "cafecult.firebaseapp.com",
+  databaseURL: "https://cafecult-default-rtdb.firebaseio.com",
+  projectId: "cafecult",
+  storageBucket: "cafecult.firebasestorage.app",
+  messagingSenderId: "23364687514",
+  appId: "1:23364687514:web:26b005e9a08be8c7dc7123",
+  measurementId: "G-MCL45X19P9"
+};
+    // ☝️ PASTE YOUR FIREBASE CONFIG OBJECT DIRECTLY ABOVE THIS LINE ☝️
+
+    // Initialize systems
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    let currentCafeId = null;
+    let allCafesData = [];
+
+    const metrics = [
+      { id: 'espresso', label: '☕ Espresso' },
+      { id: 'cappuccino', label: '🥛 Cappuccino' },
+      { id: 'hotMatcha', label: '🍵 Hot Matcha' },
+      { id: 'icedMatcha', label: '🧊 Iced Matcha' }
+    ];
+
+    // Screen Management Hooks
+    const authScreen = document.getElementById('auth-screen');
+    const appScreen = document.getElementById('app-screen');
+    const cafeList = document.getElementById('cafe-list');
+    const loginBtn = document.getElementById('login-btn');
+    const signoutBtn = document.getElementById('signout-btn');
+    const ratingModal = document.getElementById('rating-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const saveRatingBtn = document.getElementById('save-rating-btn');
+
+    // Watch for login changes
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        authScreen.classList.add('hidden');
+        appScreen.classList.remove('hidden');
+        loadAppDashboard();
+      } else {
+        authScreen.classList.remove('hidden');
+        appScreen.classList.add('hidden');
+      }
+    });
+
+    // Handle Login Click
+    loginBtn.addEventListener('click', async () => {
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (err) {
+        alert("Login failed: " + err.message);
+      }
+    });
+
+    // Handle Signout Click
+    signoutBtn.addEventListener('click', () => signOut(auth));
+
+    // Pull Database Items
+    async function loadAppDashboard() {
+      try {
+        const cafeSnap = await getDocs(collection(db, 'cafes'));
+        allCafesData = [];
+
+        for (let cafeDoc of cafeSnap.docs) {
+          const cafeData = { id: cafeDoc.id, ...cafeDoc.data(), ratings: {} };
+          const ratingsSnap = await getDocs(collection(db, `cafes/${cafeDoc.id}/ratings`));
+          ratingsSnap.forEach(rDoc => {
+            cafeData.ratings[rDoc.id] = rDoc.data();
+          });
+          allCafesData.push(cafeData);
+        }
+        renderCafeCards();
+      } catch (err) {
+        console.error("Error loading data:", err);
+      }
+    }
+
+    // Build Cards visually on screen
+    function renderCafeCards() {
+      cafeList.innerHTML = '';
+      if (allCafesData.length === 0) {
+        cafeList.innerHTML = `<p class="text-zinc-500 text-sm text-center py-8">No cafes found. Go add one to your Firestore collection!</p>`;
+        return;
+      }
+
+      allCafesData.forEach(cafe => {
+        const averages = calculateAverages(cafe.ratings);
+        const card = document.createElement('div');
+        card.className = "bg-zinc-900 border border-zinc-800 p-5 rounded-2xl space-y-4 active:border-zinc-700 transition cursor-pointer";
+        
+        let cardHTML = `
+          <div class="flex justify-between items-start">
+            <h3 class="text-lg font-bold">${cafe.name}</h3>
+            <span class="text-[10px] font-bold tracking-wider uppercase px-2 py-1 bg-zinc-800 rounded-md text-zinc-400">
+              ${Object.keys(cafe.ratings).length}/4 Rated
+            </span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+        `;
+
+        metrics.forEach(m => {
+          const score = averages[m.id] ? averages[m.id].toFixed(1) : '—';
+          cardHTML += `
+            <div class="flex justify-between bg-zinc-950/50 p-3 rounded-xl border border-zinc-800/20">
+              <span class="text-zinc-400">${m.label}</span>
+              <span class="font-bold ${score !== '—' ? 'text-amber-400' : 'text-zinc-600'}">${score}</span>
+            </div>
+          `;
+        });
+
+        cardHTML += `</div>`;
+        card.innerHTML = cardHTML;
+        card.addEventListener('click', () => openRatingModal(cafe.id));
+        cafeList.appendChild(card);
+      });
+    }
+
+    function calculateAverages(ratingsObject) {
+      const totals = { espresso: 0, cappuccino: 0, hotMatcha: 0, icedMatcha: 0 };
+      const counts = { espresso: 0, cappuccino: 0, hotMatcha: 0, icedMatcha: 0 };
+      
+      Object.values(ratingsObject).forEach(userRating => {
+        metrics.forEach(m => {
+          if (userRating[m.id] !== undefined) {
+            totals[m.id] += parseFloat(userRating[m.id]);
+            counts[m.id]++;
+          }
+        });
+      });
+
+      const averages = {};
+      metrics.forEach(m => {
+        if (counts[m.id] > 0) averages[m.id] = totals[m.id] / counts[m.id];
+      });
+      return averages;
+    }
+
+    function openRatingModal(cafeId) {
+      currentCafeId = cafeId;
+      const cafe = allCafesData.find(c => c.id === cafeId);
+      const myUid = auth.currentUser.uid;
+      const myCurrentRatings = cafe.ratings[myUid] || {};
+
+      document.getElementById('modal-cafe-name').textContent = cafe.name;
+
+      const averages = calculateAverages(cafe.ratings);
+      const communityBox = document.getElementById('community-scores');
+      communityBox.innerHTML = '';
+      metrics.forEach(m => {
+        const score = averages[m.id] ? averages[m.id].toFixed(1) : '—';
+        communityBox.innerHTML += `
+          <div class="text-center p-1">
+            <p class="text-[10px] text-zinc-500 font-semibold uppercase">${m.label.split(' ')[1] || m.label}</p>
+            <p class="text-base font-black text-zinc-100 mt-0.5">${score}</p>
+          </div>
+        `;
+      });
+
+      const sliderContainer = document.getElementById('metric-sliders');
+      sliderContainer.innerHTML = '';
+      metrics.forEach(m => {
+        const val = myCurrentRatings[m.id] !== undefined ? myCurrentRatings[m.id] : 3.0;
+        
+        // Dynamic string construction for modern input tags
+        const wrap = document.createElement('div');
+        wrap.className = "space-y-1.5 bg-zinc-950/60 p-3.5 rounded-xl border border-zinc-800/40";
+        wrap.innerHTML = `
+          <div class="flex justify-between text-sm">
+            <label class="font-medium text-zinc-300">${m.label}</label>
+            <span id="val-${m.id}" class="font-bold text-amber-400">${parseFloat(val).toFixed(1)}</span>
+          </div>
+          <input type="range" id="input-${m.id}" min="1" max="5" step="0.5" value="${val}" 
+            class="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-zinc-50">
+        `;
+        
+        // Real-time slider number preview counter track hook
+        wrap.querySelector('input').addEventListener('input', (e) => {
+          document.getElementById(`val-${m.id}`).innerText = parseFloat(e.target.value).toFixed(1);
+        });
+
+        sliderContainer.appendChild(wrap);
+      });
+
+      ratingModal.classList.remove('hidden');
+    }
+
+    closeModalBtn.addEventListener('click', () => ratingModal.classList.add('hidden'));
+
+    // Save Ratings to Cloud
+    saveRatingBtn.addEventListener('click', async () => {
+      if (!currentCafeId) return;
+      const myUid = auth.currentUser.uid;
+      const payload = { updatedAt: new Date().toISOString() };
+
+      metrics.forEach(m => {
+        payload[m.id] = parseFloat(document.getElementById(`input-${m.id}`).value);
+      });
+
+      try {
+        saveRatingBtn.disabled = true;
+        saveRatingBtn.textContent = "Locking in...";
+        await setDoc(doc(db, `cafes/${currentCafeId}/ratings`, myUid), payload, { merge: true });
+        ratingModal.classList.add('hidden');
+        await loadAppDashboard(); 
+      } catch (err) {
+        alert("Could not save scores: " + err.message);
+      } finally {
+        saveRatingBtn.disabled = false;
+        saveRatingBtn.textContent = "Lock In Scores";
+      }
+    });
+  </script>
+</body>
+</html>
