@@ -8,8 +8,6 @@
   <!-- iOS Web App Configurations -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  
-  <!-- ✨ NEW: Custom High-Res Apple App Icon -->
   <link rel="apple-touch-icon" href="https://img.icons8.com/emoji/512/hot-beverage.png">
   
   <!-- Tailwind CSS Engine -->
@@ -21,13 +19,20 @@
       -webkit-touch-callout: none;
       -webkit-user-select: none;
       user-select: none;
-      overscroll-behavior-y: contain; /* Prevents awkward pull-to-refresh pull downs */
+      overscroll-behavior-y: contain;
       padding-top: env(safe-area-inset-top);
       padding-bottom: env(safe-area-inset-bottom);
     }
-    /* Smooth iOS Scroll Snapping Physics */
     .ios-scroll {
       -webkit-overflow-scrolling: touch;
+    }
+    /* ✨ NEW: Hide scrollbars for the sleek horizontal slider */
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
   </style>
 </head>
@@ -59,7 +64,6 @@
       <button id="signout-btn" class="text-xs text-zinc-400 font-semibold border border-zinc-800/80 px-3 py-2 rounded-xl active:bg-zinc-900 cursor-pointer transition-all duration-100">Sign Out</button>
     </header>
 
-    <!-- ✨ UPGRADED: Flex layout allows the button to sit at the bottom naturally -->
     <main class="flex-1 px-5 py-4 overflow-y-auto ios-scroll flex flex-col">
       <div id="cafe-list" class="space-y-4">
         <div class="flex flex-col items-center justify-center py-20 space-y-2">
@@ -68,7 +72,6 @@
         </div>
       </div>
       
-      <!-- ✨ NEW: Add Cafe Button at bottom of list -->
       <div class="pt-6 pb-8 mt-auto">
         <button id="open-add-modal-btn" class="w-full bg-zinc-900 border border-zinc-800 border-dashed text-zinc-400 font-bold py-4 rounded-2xl text-sm active:bg-zinc-800 transition-all cursor-pointer flex justify-center items-center gap-2">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
@@ -80,8 +83,9 @@
 
   <!-- ==================== SCREEN 3: RATING PANEL ==================== -->
   <div id="rating-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md z-20 flex items-end justify-center">
-    <div class="bg-zinc-900/95 w-full rounded-t-[2.5rem] p-6 space-y-6 max-w-md border-t border-zinc-800/80 max-h-[88vh] overflow-y-auto pb-12 ios-scroll shadow-2xl">
+    <div class="bg-zinc-900/95 w-full rounded-t-[2.5rem] p-6 space-y-6 max-w-md border-t border-zinc-800/80 max-h-[92vh] overflow-y-auto pb-12 ios-scroll hide-scrollbar shadow-2xl">
       <div class="w-12 h-1 bg-zinc-700/60 rounded-full mx-auto -mt-2 mb-2"></div>
+      
       <div class="flex justify-between items-start">
         <div>
           <h3 id="modal-cafe-name" class="text-2xl font-black tracking-tight text-zinc-100">Cafe Name</h3>
@@ -89,8 +93,20 @@
         </div>
         <button id="close-modal-btn" class="text-zinc-400 text-xs font-bold bg-zinc-800/80 active:bg-zinc-700 px-4 py-2 rounded-full cursor-pointer transition-colors">Done</button>
       </div>
+
+      <!-- Global Averages -->
       <div id="community-scores" class="grid grid-cols-2 gap-2.5 bg-zinc-950/80 p-4 rounded-2xl border border-zinc-800/40 shadow-inner"></div>
-      <div class="space-y-4">
+
+      <!-- ✨ NEW: Friends / Council Verdicts Section -->
+      <div class="space-y-3 pt-1">
+        <h4 class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase">Council Verdicts</h4>
+        <div id="council-verdicts-list" class="flex gap-3 overflow-x-auto pb-2 ios-scroll hide-scrollbar snap-x snap-mandatory">
+          <!-- User micro-cards injected here -->
+        </div>
+      </div>
+
+      <!-- Personal Sliders -->
+      <div class="space-y-4 pt-2 border-t border-zinc-800/50">
         <h4 class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase">Your Personal Assessment</h4>
         <div class="space-y-3.5" id="metric-sliders"></div>
         <button id="save-rating-btn" class="w-full bg-zinc-50 text-zinc-950 font-bold py-4 rounded-2xl text-sm active:scale-[0.97] active:bg-zinc-200 transition-all duration-150 cursor-pointer shadow-lg mt-4">
@@ -101,7 +117,6 @@
   </div>
 
   <!-- ==================== SCREEN 4: ADD CAFE PANEL ==================== -->
-  <!-- ✨ NEW: Slide up modal for creating a new cafe -->
   <div id="add-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md z-30 flex items-end justify-center">
     <div class="bg-zinc-900/95 w-full rounded-t-[2.5rem] p-6 space-y-6 max-w-md border-t border-zinc-800/80 shadow-2xl pb-12">
       <div class="w-12 h-1 bg-zinc-700/60 rounded-full mx-auto -mt-2 mb-2"></div>
@@ -125,12 +140,10 @@
 
   <!-- ==================== SYSTEM BACKEND CONNECTIONS ==================== -->
   <script type="module">
-    // ✨ NEW: 'addDoc' has been added to the imports below
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
     import { getFirestore, collection, getDocs, doc, setDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-    // 👇 YOUR SECURE FIREBASE CONFIG OBJECT KEYS 👇
     const firebaseConfig = {
       apiKey: "AIzaSyAZ70ALdG7SIew7YfKNYN0gAivNjh9LD9E",
       authDomain: "cafecult.firebaseapp.com",
@@ -166,8 +179,7 @@
     const closeModalBtn = document.getElementById('close-modal-btn');
     const saveRatingBtn = document.getElementById('save-rating-btn');
     const userGreeting = document.getElementById('user-greeting');
-
-    // ✨ NEW: Add Cafe Modal Elements
+    
     const addModal = document.getElementById('add-modal');
     const openAddModalBtn = document.getElementById('open-add-modal-btn');
     const closeAddModalBtn = document.getElementById('close-add-modal-btn');
@@ -262,6 +274,7 @@
         
         const rankColors = ["text-amber-400 bg-amber-500/10 border-amber-500/20", "text-zinc-300 bg-zinc-300/10 border-zinc-300/20", "text-amber-700 bg-amber-700/10 border-amber-700/20"];
         const rankBadgeClass = index < 3 ? rankColors[index] : "text-zinc-500 bg-zinc-800/20 border-zinc-800/30";
+        const ratersCount = Object.keys(cafe.ratings).length;
 
         let cardHTML = `
           <div class="flex justify-between items-center">
@@ -270,7 +283,7 @@
               <h3 class="text-lg font-bold text-zinc-100 tracking-tight">${cafe.name}</h3>
             </div>
             <span class="text-[10px] font-bold tracking-wider uppercase px-2 py-1 bg-zinc-950 rounded-lg text-zinc-500 border border-zinc-900">
-              ${Object.keys(cafe.ratings).length}/4 Verified
+              ${ratersCount} ${ratersCount === 1 ? 'Rating' : 'Ratings'}
             </span>
           </div>
           <div class="grid grid-cols-2 gap-2 text-xs">
@@ -301,6 +314,7 @@
 
       document.getElementById('modal-cafe-name').textContent = cafe.name;
 
+      // 1. Render Global Averages
       const averages = calculateAverages(cafe.ratings);
       const communityBox = document.getElementById('community-scores');
       communityBox.innerHTML = '';
@@ -314,6 +328,49 @@
         `;
       });
 
+      // ✨ NEW: 2. Render Council Verdicts (Individual Friends)
+      const verdictsList = document.getElementById('council-verdicts-list');
+      verdictsList.innerHTML = '';
+      const ratingKeys = Object.keys(cafe.ratings);
+      
+      if (ratingKeys.length === 0) {
+        verdictsList.innerHTML = `<div class="text-xs text-zinc-600 italic px-2 py-2">No verdicts yet. Be the first to rate.</div>`;
+      } else {
+        ratingKeys.forEach(uid => {
+          const r = cafe.ratings[uid];
+          const name = r.userName || 'Member';
+          const initial = name.charAt(0).toUpperCase();
+          const isMe = uid === myUid;
+          const nameDisplay = isMe ? 'You' : name;
+          
+          let metricsHtml = '';
+          metrics.forEach(m => {
+            const val = r[m.id];
+            if (val !== undefined) {
+               const icon = m.label.split(' ')[0]; 
+               metricsHtml += `<div class="bg-zinc-950/60 rounded px-1.5 py-1 flex justify-between items-center border border-zinc-800/30"><span class="text-[10px]">${icon}</span><span class="text-zinc-300 font-bold">${parseFloat(val).toFixed(1)}</span></div>`;
+            }
+          });
+
+          // Style adjustments to make 'You' stand out subtly
+          const highlightClass = isMe ? 'border-amber-500/20 bg-amber-500/5' : 'border-zinc-800/50 bg-zinc-900/60';
+          const avatarClass = isMe ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-zinc-800 text-zinc-400 border-zinc-700/50';
+
+          verdictsList.innerHTML += `
+            <div class="flex-shrink-0 w-[140px] snap-start ${highlightClass} border rounded-2xl p-3 flex flex-col gap-2.5 shadow-sm">
+              <div class="flex items-center gap-2 border-b border-zinc-800/40 pb-2">
+                <div class="w-6 h-6 rounded-full ${avatarClass} text-[10px] font-black flex items-center justify-center border">${initial}</div>
+                <span class="text-xs font-bold ${isMe ? 'text-amber-400' : 'text-zinc-200'} truncate">${nameDisplay}</span>
+              </div>
+              <div class="grid grid-cols-2 gap-1.5 text-[10px] font-medium text-zinc-500">
+                ${metricsHtml}
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      // 3. Render Personal Assessment Sliders
       const sliderContainer = document.getElementById('metric-sliders');
       sliderContainer.innerHTML = '';
       metrics.forEach(m => {
@@ -345,7 +402,12 @@
     saveRatingBtn.addEventListener('click', async () => {
       if (!currentCafeId) return;
       const myUid = auth.currentUser.uid;
-      const payload = { updatedAt: new Date().toISOString() };
+      
+      // ✨ NEW: Saving the user's name to the database payload
+      const payload = { 
+        updatedAt: new Date().toISOString(),
+        userName: auth.currentUser.displayName || 'Council Member' 
+      };
 
       metrics.forEach(m => {
         payload[m.id] = parseFloat(document.getElementById(`input-${m.id}`).value);
@@ -365,11 +427,9 @@
       }
     });
 
-    // ✨ NEW: Add Cafe Modal Triggers & Logic
     openAddModalBtn.addEventListener('click', () => {
       newCafeNameInput.value = '';
       addModal.classList.remove('hidden');
-      // Slight delay to allow modal to render before focusing on the input
       setTimeout(() => newCafeNameInput.focus(), 100); 
     });
 
@@ -377,19 +437,16 @@
 
     submitCafeBtn.addEventListener('click', async () => {
       const name = newCafeNameInput.value.trim();
-      if (!name) return; // Prevent empty submissions
+      if (!name) return; 
 
       try {
         submitCafeBtn.disabled = true;
         submitCafeBtn.textContent = "Adding Location...";
-        
-        // Add to Firebase Collection
         await addDoc(collection(db, 'cafes'), { name: name });
-        
         addModal.classList.add('hidden');
-        await loadAppDashboard(); // Instantly refresh UI
+        await loadAppDashboard(); 
       } catch (err) {
-        alert("Failed to add location. Check Firebase Rules! Error: " + err.message);
+        alert("Failed to add location. Error: " + err.message);
       } finally {
         submitCafeBtn.disabled = false;
         submitCafeBtn.textContent = "Add Location";
