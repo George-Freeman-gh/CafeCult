@@ -5,12 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Café Cult</title>
   
-  <!-- iOS Web App Configurations -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="https://img.icons8.com/emoji/512/hot-beverage.png">
   
-  <!-- Tailwind CSS Engine -->
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   
   <style>
@@ -44,7 +42,6 @@
         <h1 class="text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-zinc-50 to-zinc-400">CAFÉ CULT</h1>
         <p class="text-zinc-500 text-sm font-medium tracking-wide">La app del corito café.</p>
       </div>
-      
       <button id="login-btn" class="w-full bg-zinc-100 text-zinc-950 font-bold py-4 rounded-2xl text-sm active:scale-[0.96] active:bg-zinc-200 transition-all duration-150 cursor-pointer shadow-xl flex items-center justify-center gap-3">
         <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/><path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
         Sign In with Google
@@ -92,34 +89,27 @@
         <button id="close-modal-btn" class="text-zinc-400 text-xs font-bold bg-zinc-800/80 active:bg-zinc-700 px-4 py-2 rounded-full cursor-pointer transition-colors">Done</button>
       </div>
 
-      <!-- Global Averages -->
       <div id="community-scores" class="grid grid-cols-2 gap-2.5 bg-zinc-950/80 p-4 rounded-2xl border border-zinc-800/40 shadow-inner"></div>
 
-      <!-- Council Verdicts Section -->
       <div class="space-y-2.5 pt-1">
         <h4 class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase">Council Verdicts</h4>
         <div id="council-verdicts-list" class="flex gap-3 overflow-x-auto pb-1 ios-scroll hide-scrollbar snap-x snap-mandatory"></div>
       </div>
 
-      <!-- ✨ NEW: Drink Gallery Section (Horizontal Image Reel) -->
+      <!-- Drink Gallery Section -->
       <div class="space-y-2.5 pt-1">
         <h4 class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase">Drink Gallery</h4>
         <div class="flex gap-3 overflow-x-auto pb-1 ios-scroll hide-scrollbar snap-x snap-mandatory">
-          <!-- Hidden Native Camera Activator Input -->
           <input type="file" id="photo-input" accept="image/*" class="hidden">
-          
-          <!-- Add Photo Frame Box Trigger -->
           <button id="add-photo-trigger" class="flex-shrink-0 w-24 h-24 rounded-2xl border border-dashed border-zinc-800 bg-zinc-950/30 active:bg-zinc-950/80 transition-all flex flex-col items-center justify-center gap-1 cursor-pointer snap-start text-zinc-500 hover:text-zinc-400">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12h12m-6-6v12"/></svg>
             <span class="text-[10px] font-black tracking-wide uppercase">Upload</span>
           </button>
           
-          <!-- Dynamic Image Grid List Container Hook -->
           <div id="photo-gallery-list" class="flex gap-3"></div>
         </div>
       </div>
 
-      <!-- Personal Sliders -->
       <div class="space-y-4 pt-3 border-t border-zinc-800/50">
         <h4 class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase">Your Personal Assessment</h4>
         <div class="space-y-3.5" id="metric-sliders"></div>
@@ -150,29 +140,24 @@
     </div>
   </div>
 
-  <!-- ==================== ✨ NEW SCREEN 5: ACCESSIBLE PREMIUM LIGHTBOX ==================== -->
+  <!-- ==================== SCREEN 5: ACCESSIBLE PREMIUM LIGHTBOX ==================== -->
   <div id="lightbox-modal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-xl z-50 flex items-center justify-center p-4 animate-fade-in" role="dialog" aria-modal="true" aria-label="Image viewer">
-    <!-- Close Area Backplate for Tap-to-Dismiss Accessibility -->
     <div class="absolute inset-0" id="lightbox-backplate"></div>
-    
-    <!-- Tactile Corner Close UI Circle Button -->
     <button id="close-lightbox-btn" class="absolute top-12 right-6 w-11 h-11 bg-zinc-900/80 border border-zinc-800 text-zinc-200 font-bold rounded-full flex items-center justify-center active:scale-95 transition-all cursor-pointer z-10 shadow-lg" aria-label="Close full screen view">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
     </button>
-    
-    <!-- Image Display Container Frame -->
     <div class="relative max-w-full max-h-[75vh] flex flex-col items-center justify-center select-none pointer-events-none">
       <img id="lightbox-img" src="" alt="Enlarged gallery capture" class="max-w-full max-h-[70vh] rounded-2xl object-contain shadow-2xl border border-zinc-900 transition-transform duration-300 scale-95">
-      <!-- Author Text Sub-banner -->
       <p id="lightbox-caption" class="text-center text-xs font-semibold text-zinc-400 mt-4 tracking-wide bg-zinc-900/50 border border-zinc-800/40 px-3 py-1.5 rounded-full backdrop-blur-md"></p>
     </div>
   </div>
 
   <!-- ==================== SYSTEM BACKEND CONNECTIONS ==================== -->
   <script type="module">
+    // ✨ NEW: Imported `deleteDoc` function 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-    import { getFirestore, collection, getDocs, doc, setDoc, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, setDoc, addDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAZ70ALdG7SIew7YfKNYN0gAivNjh9LD9E",
@@ -216,7 +201,6 @@
     const submitCafeBtn = document.getElementById('submit-cafe-btn');
     const newCafeNameInput = document.getElementById('new-cafe-name');
 
-    // ✨ NEW: Gallery UI Element References
     const photoInput = document.getElementById('photo-input');
     const addPhotoTrigger = document.getElementById('add-photo-trigger');
     const photoGalleryList = document.getElementById('photo-gallery-list');
@@ -245,7 +229,7 @@
 
     signoutBtn.addEventListener('click', () => signOut(auth));
 
-async function loadAppDashboard() {
+    async function loadAppDashboard() {
       try {
         const cafeSnap = await getDocs(collection(db, 'cafes'));
         allCafesData = [];
@@ -260,7 +244,6 @@ async function loadAppDashboard() {
         }
         renderCafeCards();
       } catch (err) {
-        // ✨ NEW: Forces the error to show up on your screen instead of failing silently
         document.getElementById('cafe-list').innerHTML = `
           <div class="flex flex-col items-center justify-center py-20 px-6 text-center space-y-4">
             <div class="text-red-500 text-5xl">⚠️</div>
@@ -361,7 +344,6 @@ async function loadAppDashboard() {
 
       document.getElementById('modal-cafe-name').textContent = cafe.name;
 
-      // 1. Render Global Averages
       const averages = calculateAverages(cafe.ratings);
       const communityBox = document.getElementById('community-scores');
       communityBox.innerHTML = '';
@@ -375,7 +357,6 @@ async function loadAppDashboard() {
         `;
       });
 
-      // 2. Render Council Verdicts
       const verdictsList = document.getElementById('council-verdicts-list');
       verdictsList.innerHTML = '';
       const ratingKeys = Object.keys(cafe.ratings);
@@ -416,10 +397,8 @@ async function loadAppDashboard() {
         });
       }
 
-      // ✨ NEW: 3. Fetch & Render Dynamic Image Gallery Row
       loadCafeGallery(cafeId);
 
-      // 4. Render Personal Assessment Sliders
       const sliderContainer = document.getElementById('metric-sliders');
       sliderContainer.innerHTML = '';
       metrics.forEach(m => {
@@ -446,7 +425,6 @@ async function loadAppDashboard() {
       ratingModal.classList.remove('hidden');
     }
 
-    // ✨ NEW: Dedicated Gallery Subcollection Sync Loader Flow
     async function loadCafeGallery(cafeId) {
       photoGalleryList.innerHTML = `<div class="text-zinc-600 text-[11px] animate-pulse py-10 pl-1">Loading gallery matrix...</div>`;
       try {
@@ -460,19 +438,49 @@ async function loadAppDashboard() {
 
         querySnap.forEach(pDoc => {
           const data = pDoc.data();
+          const photoId = pDoc.id;
+          
+          // ✨ NEW: Identity Check for Ownership
+          const isOwner = data.uid === auth.currentUser.uid;
+
           const frame = document.createElement('div');
           frame.className = "flex-shrink-0 w-24 h-24 rounded-2xl bg-zinc-950 border border-zinc-800/60 overflow-hidden active:scale-95 transition-transform duration-100 cursor-pointer snap-start shadow-md relative group";
           
+          // ✨ NEW: Inject frosted-glass delete button ONLY if they uploaded it
+          let deleteBtnHTML = '';
+          if (isOwner) {
+            deleteBtnHTML = `
+              <button class="delete-photo-btn absolute top-1.5 right-1.5 w-6 h-6 bg-black/60 backdrop-blur-md border border-zinc-700/50 text-zinc-300 rounded-full flex items-center justify-center active:bg-red-500/90 active:text-white transition-colors z-10 shadow-sm" aria-label="Delete photo">
+                <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            `;
+          }
+
           frame.innerHTML = `
             <img src="${data.url}" alt="Drink captured by ${data.userName}" class="w-full h-full object-cover">
             <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-1 px-1.5 text-center text-[8px] text-zinc-400 font-bold truncate">
               ${data.userName.split(' ')[0]}
             </div>
+            ${deleteBtnHTML}
           `;
           
-          // Wire Premium Lightbox Click Expansion Event
-          frame.addEventListener('click', () => {
-            openLightbox(data.url, `Shot by ${data.userName}`);
+          // ✨ NEW: Smart Click Routing (Delete vs. Expand)
+          frame.addEventListener('click', async (e) => {
+            if (e.target.closest('.delete-photo-btn')) {
+              e.stopPropagation(); // Prevents Lightbox from opening
+              
+              // Trigger Native iOS system prompt
+              if (confirm("Permanently remove this photo from the gallery?")) {
+                try {
+                  await deleteDoc(doc(db, `cafes/${cafeId}/photos`, photoId));
+                  await loadCafeGallery(cafeId); // Instantly refresh
+                } catch (err) {
+                  alert("Delete failed: " + err.message);
+                }
+              }
+            } else {
+              openLightbox(data.url, `Shot by ${data.userName}`);
+            }
           });
           
           photoGalleryList.appendChild(frame);
@@ -483,7 +491,6 @@ async function loadAppDashboard() {
       }
     }
 
-    // ✨ NEW: Ultra-polished Mobile Image Optimizer Engine
     addPhotoTrigger.addEventListener('click', () => photoInput.click());
 
     photoInput.addEventListener('change', async (e) => {
@@ -498,7 +505,6 @@ async function loadAppDashboard() {
       reader.onload = function(event) {
         const img = new Image();
         img.onload = async function() {
-          // HTML5 Canvas Multi-dimensional Downsampling Logic (Max 800px boundaries at 0.7 JPEG crunch)
           const canvas = document.createElement('canvas');
           let width = img.width;
           let height = img.height;
@@ -521,6 +527,7 @@ async function loadAppDashboard() {
             await addDoc(collection(db, `cafes/${currentCafeId}/photos`), {
               url: compressedBase64,
               userName: auth.currentUser.displayName || 'Council Member',
+              uid: auth.currentUser.uid, // ✨ NEW: Tagging the upload with user ID
               createdAt: new Date().toISOString()
             });
             await loadCafeGallery(currentCafeId);
@@ -529,7 +536,7 @@ async function loadAppDashboard() {
           } finally {
             addPhotoTrigger.disabled = false;
             addPhotoTrigger.innerHTML = originalButtonContent;
-            photoInput.value = ''; // Flush upload selector target hook
+            photoInput.value = ''; 
           }
         };
         img.src = event.target.result;
@@ -537,13 +544,11 @@ async function loadAppDashboard() {
       reader.readAsDataURL(file);
     });
 
-    // ✨ NEW: Accessible Lightbox Control Mechanics
     function openLightbox(src, captionText) {
       lightboxImg.src = src;
       lightboxCaption.textContent = captionText;
       lightboxModal.classList.remove('hidden');
       
-      // Gentle delayed scaling animation entry effect
       setTimeout(() => {
         lightboxImg.classList.remove('scale-95');
         lightboxImg.classList.add('scale-100');
@@ -562,7 +567,6 @@ async function loadAppDashboard() {
     closeLightboxBtn.addEventListener('click', closeLightbox);
     lightboxBackplate.addEventListener('click', closeLightbox);
     
-    // Accessibility Keyboard Escape-Key Binding
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !lightboxModal.classList.contains('hidden')) {
         closeLightbox();
