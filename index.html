@@ -41,7 +41,6 @@
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* Cinematic Logo Physics */
     @keyframes smoothReveal {
       0% { opacity: 0; transform: translateY(15px); filter: blur(8px); }
       100% { opacity: 1; transform: translateY(0px); filter: blur(0px); }
@@ -81,6 +80,10 @@
       object-fit: contain;
       animation: gentleFloat 5s ease-in-out infinite;
     }
+    
+    /* ✨ NEW: Bottom Tab Animation */
+    .tab-active { color: #f59e0b !important; }
+    .tab-inactive { color: #71717a !important; }
   </style>
 </head>
 <body class="bg-zinc-950 text-zinc-50 font-sans flex flex-col antialiased selection:bg-zinc-800">
@@ -103,10 +106,11 @@
     </div>
   </div>
 
-  <div id="app-screen" class="hidden flex-1 flex flex-col h-full w-full">
+  <div id="app-screen" class="hidden flex-1 flex flex-col h-full w-full relative">
+    
     <header class="flex-shrink-0 border-b border-zinc-900/60 px-6 py-4 flex justify-between items-end bg-zinc-950/75 backdrop-blur-xl z-10" style="padding-top: max(var(--sat), 1rem);">
       <div class="pt-2">
-        <h2 class="text-2xl font-black tracking-tight text-zinc-100 leading-none">Leaderboard</h2>
+        <h2 id="header-title" class="text-2xl font-black tracking-tight text-zinc-100 leading-none transition-all">Leaderboard</h2>
         <p id="user-greeting" class="text-[11px] text-zinc-500 font-medium mt-1"></p>
       </div>
       <div class="flex items-center gap-2">
@@ -115,19 +119,56 @@
       </div>
     </header>
 
-    <main class="flex-1 px-5 pt-4 ios-scroll flex flex-col" style="padding-bottom: max(var(--sab), 2rem);">
-      <div id="cafe-list" class="space-y-4"></div>
+    <main class="flex-1 px-5 pt-4 ios-scroll flex flex-col w-full overflow-x-hidden" style="padding-bottom: calc(max(var(--sab), 1rem) + 5rem);">
       
-      <div class="pt-6 pb-4 mt-auto">
-        <button id="open-add-modal-btn" class="w-full bg-zinc-900 border border-zinc-800 border-dashed text-zinc-400 font-bold py-4 rounded-2xl text-sm active:bg-zinc-800 transition-all cursor-pointer flex justify-center items-center gap-2">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-          Add New Location
-        </button>
+      <div id="leaderboard-view" class="flex flex-col flex-1 animate-[smoothReveal_0.4s_ease-out_forwards]">
+        <div id="cafe-list" class="space-y-4"></div>
+        <div class="pt-6 pb-4 mt-auto">
+          <button id="open-add-modal-btn" class="w-full bg-zinc-900 border border-zinc-800 border-dashed text-zinc-400 font-bold py-4 rounded-2xl text-sm active:bg-zinc-800 transition-all cursor-pointer flex justify-center items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Add New Location
+          </button>
+        </div>
       </div>
+
+      <div id="profile-view" class="hidden flex-col flex-1 animate-[smoothReveal_0.4s_ease-out_forwards]">
+        <div class="flex flex-col items-center mt-4 mb-8">
+          <div class="relative group">
+            <div class="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-amber-600 to-amber-400 shadow-xl cursor-pointer active:scale-95 transition-transform" id="profile-avatar-trigger">
+              <img id="profile-avatar-img" src="" class="w-full h-full rounded-full object-cover bg-zinc-900 border-2 border-zinc-950" alt="Avatar">
+              <div class="absolute inset-1 rounded-full bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+              </div>
+            </div>
+            <input type="file" id="profile-photo-input" accept="image/*" class="hidden">
+          </div>
+          <h2 id="profile-display-name" class="mt-4 text-xl font-black text-zinc-100 tracking-tight"></h2>
+          <p class="text-[10px] font-bold tracking-widest text-amber-500/80 uppercase mt-0.5">Council Member</p>
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="text-xs font-bold tracking-widest text-zinc-500 uppercase border-b border-zinc-900 pb-2">Personal Decrees</h3>
+          <div id="personal-decrees-list" class="space-y-3">
+            </div>
+        </div>
+      </div>
+
     </main>
+
+    <nav class="absolute bottom-0 inset-x-0 bg-zinc-950/85 backdrop-blur-xl border-t border-zinc-900/80 z-40 flex justify-around items-center" style="padding-bottom: max(var(--sab), 0px);">
+      <button id="nav-leaderboard" class="flex-1 pt-3 pb-4 flex flex-col items-center gap-1 transition-all tab-active active:scale-95 cursor-pointer">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+        <span class="text-[9px] font-bold tracking-widest uppercase">Leaderboard</span>
+      </button>
+      <button id="nav-profile" class="flex-1 pt-3 pb-4 flex flex-col items-center gap-1 transition-all tab-inactive active:scale-95 cursor-pointer">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+        <span class="text-[9px] font-bold tracking-widest uppercase">My Sanctum</span>
+      </button>
+    </nav>
+
   </div>
 
-  <div id="rating-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md z-20 flex items-end justify-center">
+  <div id="rating-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md z-[50] flex items-end justify-center">
     <div class="bg-zinc-900/95 w-full rounded-t-[2.5rem] p-6 space-y-5 max-w-md border-t border-zinc-800/80 max-h-[92dvh] flex flex-col shadow-2xl">
       <div class="flex-shrink-0 space-y-4">
         <div class="w-12 h-1 bg-zinc-700/60 rounded-full mx-auto -mt-2"></div>
@@ -174,7 +215,7 @@
     </div>
   </div>
 
-  <div id="petition-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-40 flex items-center justify-center p-4">
+  <div id="petition-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-[60] flex items-center justify-center p-4">
     <div class="absolute inset-0" id="petition-backplate"></div>
     <div class="relative bg-zinc-900 w-full max-w-sm rounded-[2rem] p-6 border border-red-900/30 shadow-2xl z-10">
       <div class="text-center space-y-4">
@@ -194,7 +235,7 @@
     </div>
   </div>
 
-  <div id="admin-modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-xl z-50 flex items-end justify-center">
+  <div id="admin-modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-xl z-[60] flex items-end justify-center">
     <div class="bg-zinc-950 w-full h-[90dvh] rounded-t-[2.5rem] p-6 flex flex-col border-t border-amber-500/30 shadow-2xl">
       <div class="flex-shrink-0 space-y-4 pb-4 border-b border-zinc-900">
         <div class="w-12 h-1 bg-zinc-800 rounded-full mx-auto -mt-2"></div>
@@ -210,7 +251,7 @@
     </div>
   </div>
   
-  <div id="add-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md z-30 flex items-end justify-center">
+  <div id="add-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md z-[60] flex items-end justify-center">
     <div class="bg-zinc-900/95 w-full rounded-t-[2.5rem] p-6 space-y-6 max-w-md border-t border-zinc-800/80 shadow-2xl" style="padding-bottom: max(var(--sab), 2rem);">
       <div class="w-12 h-1 bg-zinc-700/60 rounded-full mx-auto -mt-2 mb-2"></div>
       <div class="flex justify-between items-start">
@@ -229,7 +270,7 @@
     </div>
   </div>
 
-  <div id="lightbox-modal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-xl z-50 flex items-center justify-center p-4" role="dialog">
+  <div id="lightbox-modal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-xl z-[70] flex items-center justify-center p-4" role="dialog">
     <div class="absolute inset-0" id="lightbox-backplate"></div>
     <button id="close-lightbox-btn" class="absolute top-12 right-6 w-11 h-11 bg-zinc-900/80 border border-zinc-800 text-zinc-200 font-bold rounded-full flex items-center justify-center z-10"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
     <div class="relative max-w-full max-h-[75vh] flex flex-col items-center justify-center pointer-events-none">
@@ -238,7 +279,7 @@
     </div>
   </div>
 
-  <div id="install-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-[60] items-end justify-center p-4">
+  <div id="install-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-[80] items-end justify-center p-4">
     <div class="relative bg-zinc-900 w-full max-w-sm rounded-[2rem] p-6 border border-zinc-800 shadow-2xl z-10" style="padding-bottom: max(var(--sab), 2rem);">
       <div class="text-center space-y-4">
         <div class="w-12 h-12 bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto border border-amber-500/20">
@@ -277,13 +318,14 @@
   </div>
 
   <script type="module">
+    // ✨ UPGRADED IMPORT: Included getDoc for fetching individual user profiles
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-    import { getFirestore, collection, getDocs, doc, setDoc, addDoc, deleteDoc, updateDoc, query, orderBy, deleteField } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, getDoc, doc, setDoc, addDoc, deleteDoc, updateDoc, query, orderBy, deleteField } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-const firebaseConfig = {
+    const firebaseConfig = {
       apiKey: "AIzaSyAZ70ALdG7SIew7YfKNYN0gAivNjh9LD9E",
-      authDomain: "cafecult.vercel.app/", // ✨ UPDATED: Point this to your Vercel URL
+      authDomain: "cafecult.vercel.app/", 
       databaseURL: "https://cafecult-default-rtdb.firebaseio.com",
       projectId: "cafecult",
       storageBucket: "cafecult.firebasestorage.app",
@@ -302,6 +344,7 @@ const firebaseConfig = {
 
     let currentCafeId = null;
     let allCafesData = [];
+    let allUsersData = {}; // ✨ NEW: Stores everyone's avatars for the verdict cards
 
     const metrics = [
       { id: 'espresso', label: '☕ Espresso', short: 'Espresso' },
@@ -310,14 +353,30 @@ const firebaseConfig = {
       { id: 'icedMatcha', label: '🧊 Iced Matcha', short: 'Iced Matcha' }
     ];
 
+    // Core UI Elements
     const authScreen = document.getElementById('auth-screen');
     const appScreen = document.getElementById('app-screen');
+    const headerTitle = document.getElementById('header-title');
     const cafeList = document.getElementById('cafe-list');
     const loginBtn = document.getElementById('login-btn');
     const signoutBtn = document.getElementById('signout-btn');
     const userGreeting = document.getElementById('user-greeting');
     const adminPanelBtn = document.getElementById('admin-panel-btn');
     
+    // ✨ Bottom Nav Elements
+    const navLeaderboard = document.getElementById('nav-leaderboard');
+    const navProfile = document.getElementById('nav-profile');
+    const viewLeaderboard = document.getElementById('leaderboard-view');
+    const viewProfile = document.getElementById('profile-view');
+    
+    // ✨ Profile Elements
+    const profileAvatarImg = document.getElementById('profile-avatar-img');
+    const profileDisplayName = document.getElementById('profile-display-name');
+    const profilePhotoInput = document.getElementById('profile-photo-input');
+    const profileAvatarTrigger = document.getElementById('profile-avatar-trigger');
+    const personalDecreesList = document.getElementById('personal-decrees-list');
+
+    // Modals
     const ratingModal = document.getElementById('rating-modal');
     const closeModalBtn = document.getElementById('close-modal-btn');
     const saveRatingBtn = document.getElementById('save-rating-btn');
@@ -346,13 +405,53 @@ const firebaseConfig = {
     const closeLightboxBtn = document.getElementById('close-lightbox-btn');
     const lightboxBackplate = document.getElementById('lightbox-backplate');
 
-    onAuthStateChanged(auth, (user) => {
+    // ==================== ✨ BOTTOM NAVIGATION LOGIC ====================
+    navLeaderboard.addEventListener('click', () => {
+      viewLeaderboard.classList.remove('hidden');
+      viewProfile.classList.add('hidden');
+      navLeaderboard.classList.replace('tab-inactive', 'tab-active');
+      navProfile.classList.replace('tab-active', 'tab-inactive');
+      headerTitle.textContent = "Leaderboard";
+    });
+
+    navProfile.addEventListener('click', () => {
+      viewProfile.classList.remove('hidden');
+      viewLeaderboard.classList.add('hidden');
+      navProfile.classList.replace('tab-inactive', 'tab-active');
+      navLeaderboard.classList.replace('tab-active', 'tab-inactive');
+      headerTitle.textContent = "My Sanctum";
+      renderPersonalDecrees(); // Refresh the grid
+    });
+
+    // ==================== AUTHENTICATION & PROFILE INIT ====================
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
         authScreen.classList.add('hidden');
         appScreen.classList.remove('hidden');
-        userGreeting.textContent = `Welcome, ${user.displayName || 'Acolyte'}`;
         if (user.uid === ADMIN_UID) adminPanelBtn.classList.remove('hidden');
         else adminPanelBtn.classList.add('hidden');
+        
+        // ✨ Fetch or Setup Private Cult Profile
+        const userRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userRef);
+        
+        let userData;
+        if (!userDoc.exists()) {
+          // First time opening the app! Sync their Google data directly to Firestore
+          userData = {
+            displayName: user.displayName || 'Acolyte',
+            photoURL: user.photoURL || ''
+          };
+          await setDoc(userRef, userData);
+        } else {
+          userData = userDoc.data();
+        }
+        
+        // Update UI locally
+        userGreeting.textContent = `Welcome, ${userData.displayName}`;
+        profileDisplayName.textContent = userData.displayName;
+        profileAvatarImg.src = userData.photoURL || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2327272a"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>';
+        
         loadAppDashboard();
       } else {
         authScreen.classList.remove('hidden');
@@ -367,8 +466,53 @@ const firebaseConfig = {
     });
     signoutBtn.addEventListener('click', () => signOut(auth));
 
+    // ==================== ✨ CUSTOM AVATAR UPLOAD ====================
+    profileAvatarTrigger.addEventListener('click', () => profilePhotoInput.click());
+    
+    profilePhotoInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0]; 
+      if (!file) return;
+      
+      profileAvatarImg.style.opacity = '0.3'; // Loading state
+      const reader = new FileReader();
+      
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = async function() {
+          // High compression for profile pictures (max 256px)
+          const canvas = document.createElement('canvas'); 
+          let w = img.width; let h = img.height; const m = 256;
+          if (w > h) { if (w > m) { h *= m / w; w = m; } } else { if (h > m) { w *= m / h; h = m; } }
+          canvas.width = w; canvas.height = h; 
+          const ctx = canvas.getContext('2d'); 
+          ctx.drawImage(img, 0, 0, w, h);
+          
+          const base64Image = canvas.toDataURL('image/jpeg', 0.8);
+          
+          try {
+            await updateDoc(doc(db, 'users', auth.currentUser.uid), { photoURL: base64Image });
+            profileAvatarImg.src = base64Image;
+            // Force an app data refresh so their new face appears on all council verdicts
+            await loadAppDashboard(); 
+          } catch (err) { alert("Avatar upload failed: " + err.message); } 
+          finally { 
+            profileAvatarImg.style.opacity = '1';
+            profilePhotoInput.value = ''; 
+          }
+        }; 
+        img.src = event.target.result;
+      }; 
+      reader.readAsDataURL(file);
+    });
+
+    // ==================== CORE SYSTEM ====================
     async function loadAppDashboard() {
       try {
+        // ✨ Fetch all user profiles so we can match faces to ratings
+        const usersSnap = await getDocs(collection(db, 'users'));
+        allUsersData = {};
+        usersSnap.forEach(u => { allUsersData[u.id] = u.data(); });
+
         const cafeSnap = await getDocs(collection(db, 'cafes'));
         allCafesData = [];
         for (let cafeDoc of cafeSnap.docs) {
@@ -380,6 +524,7 @@ const firebaseConfig = {
           allCafesData.push(cafeData);
         }
         renderCafeCards();
+        renderPersonalDecrees(); // Refresh profile tab content
       } catch (err) {
         cafeList.innerHTML = `<div class="text-center py-20 text-red-500 font-bold">⚠️ Connection Blocked</div>`;
       }
@@ -399,6 +544,54 @@ const firebaseConfig = {
       });
       averages._overallSortScore = absoluteCount > 0 ? (absoluteSum / absoluteCount) : 0;
       return averages;
+    }
+
+    // ✨ NEW: Render the Profile's "Personal Decrees" Archive
+    function renderPersonalDecrees() {
+      personalDecreesList.innerHTML = '';
+      const myUid = auth.currentUser.uid;
+      
+      // Filter cafes to ONLY the ones this user has actively rated
+      const myRatedCafes = allCafesData.filter(cafe => cafe.ratings && cafe.ratings[myUid]);
+
+      if (myRatedCafes.length === 0) {
+        personalDecreesList.innerHTML = `<div class="text-center text-xs text-zinc-600 italic py-10">Your records are empty. Go rate some locations.</div>`;
+        return;
+      }
+
+      // Sort by recently updated
+      myRatedCafes.sort((a, b) => new Date(b.ratings[myUid].updatedAt) - new Date(a.ratings[myUid].updatedAt));
+
+      myRatedCafes.forEach(cafe => {
+        const myRating = cafe.ratings[myUid];
+        const card = document.createElement('div');
+        card.className = "bg-zinc-900/60 border border-zinc-800/50 p-4 rounded-2xl flex flex-col gap-2.5 cursor-pointer active:scale-[0.98] transition-all shadow-sm";
+        
+        let chipsHtml = '';
+        metrics.forEach(m => {
+          if (myRating[m.id] !== undefined && parseFloat(myRating[m.id]) > 0) {
+            chipsHtml += `<span class="px-2 py-1 bg-zinc-950 border border-zinc-800/80 rounded-lg text-[10px] font-bold text-amber-400/90 shadow-inner">${m.label.split(' ')[0]} ${parseFloat(myRating[m.id]).toFixed(1)}</span>`;
+          }
+        });
+
+        // Format Date elegantly
+        const dateObj = new Date(myRating.updatedAt);
+        const dateString = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+        card.innerHTML = `
+          <div class="flex justify-between items-end">
+            <h4 class="font-bold text-zinc-200 tracking-tight">${cafe.name}</h4>
+            <span class="text-[9px] text-zinc-500 uppercase tracking-widest font-mono">${dateString}</span>
+          </div>
+          <div class="flex flex-wrap gap-1.5 mt-0.5">
+            ${chipsHtml}
+          </div>
+        `;
+        
+        // Let them tap the card to jump straight into editing it
+        card.addEventListener('click', () => openRatingModal(cafe.id));
+        personalDecreesList.appendChild(card);
+      });
     }
 
     function renderCafeCards() {
@@ -469,7 +662,6 @@ const firebaseConfig = {
       const verdictsList = document.getElementById('council-verdicts-list');
       verdictsList.innerHTML = '';
       const ratingKeys = Object.keys(cafe.ratings);
-      
       let validCardsHtml = '';
 
       ratingKeys.forEach(uid => {
@@ -486,15 +678,24 @@ const firebaseConfig = {
 
         if (!hasValidRating) return; 
 
-        const name = r.userName || 'Acolyte';
-        const initial = name.charAt(0).toUpperCase();
+        // ✨ UPGRADED: Dynamic Profile Picture Injection
+        const uData = allUsersData[uid] || {};
+        const name = uData.displayName || r.userName || 'Acolyte';
         const isMe = uid === myUid;
         const nameDisplay = isMe ? 'You' : name;
+        
+        let avatarHtml;
+        if (uData.photoURL) {
+          avatarHtml = `<img src="${uData.photoURL}" class="w-6 h-6 rounded-full object-cover border ${isMe ? 'border-amber-500/50' : 'border-zinc-700/50'}">`;
+        } else {
+          const initial = name.charAt(0).toUpperCase();
+          avatarHtml = `<div class="w-6 h-6 rounded-full ${isMe ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-zinc-800 text-zinc-400 border-zinc-700/50'} text-[10px] font-black flex items-center justify-center border">${initial}</div>`;
+        }
         
         validCardsHtml += `
           <div class="flex-shrink-0 w-[140px] snap-start ${isMe ? 'border-amber-500/20 bg-amber-500/5' : 'border-zinc-800/50 bg-zinc-900/60'} border rounded-2xl p-3 flex flex-col gap-2.5 shadow-sm">
             <div class="flex items-center gap-2 border-b border-zinc-800/40 pb-2">
-              <div class="w-6 h-6 rounded-full ${isMe ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-zinc-800 text-zinc-400 border-zinc-700/50'} text-[10px] font-black flex items-center justify-center border">${initial}</div>
+              ${avatarHtml}
               <span class="text-xs font-bold ${isMe ? 'text-amber-400' : 'text-zinc-200'} truncate">${nameDisplay}</span>
             </div>
             <div class="grid grid-cols-2 gap-1.5 text-[10px] font-medium text-zinc-500">${metricsHtml}</div>
@@ -541,9 +742,12 @@ const firebaseConfig = {
         });
         sliderContainer.appendChild(wrap);
       });
+      
       ratingModal.classList.remove('hidden');
+      ratingModal.classList.add('flex'); // Ensuring block formatting is correct
     }
 
+    // Re-use logic for galleries and modals...
     async function loadCafeGallery(cafeId) {
       photoGalleryList.innerHTML = `<div class="text-zinc-600 text-[11px] animate-pulse py-10 pl-1">Loading gallery matrix...</div>`;
       try {
@@ -607,7 +811,11 @@ const firebaseConfig = {
 
     saveRatingBtn.addEventListener('click', async () => {
       if (!currentCafeId) return;
-      const payload = { updatedAt: new Date().toISOString(), userName: auth.currentUser.displayName || 'Acolyte' };
+      
+      const payload = { 
+        updatedAt: new Date().toISOString(), 
+        userName: auth.currentUser.displayName || 'Acolyte' 
+      };
       
       let hasAnyValidRating = false;
 
@@ -694,17 +902,12 @@ const firebaseConfig = {
     const installModal = document.getElementById('install-modal');
     const closeInstallModalBtn = document.getElementById('close-install-modal-btn');
 
-    // Detect if the device is an iPhone/iPad/iPod
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-
-    // Detect if running as a standalone PWA so we don't bother users who already installed it
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
-    // ONLY show on iOS devices, and only if NOT already installed
     if (isIOS && !isStandalone) {
       const hasSeenInstallPrompt = localStorage.getItem('hasSeenInstallPrompt');
       if (!hasSeenInstallPrompt) {
-        // Wait 1.5 seconds after app loads so it feels natural, then show the popup
         setTimeout(() => {
           installModal.classList.remove('hidden');
           installModal.classList.add('flex');
@@ -715,10 +918,9 @@ const firebaseConfig = {
     closeInstallModalBtn.addEventListener('click', () => {
       installModal.classList.add('hidden');
       installModal.classList.remove('flex');
-      // Lock it in local storage so they never see it again
       localStorage.setItem('hasSeenInstallPrompt', 'true');
     });
 
   </script>
 </body>
-</html>
+</html> 
