@@ -42,7 +42,6 @@
         <p class="text-zinc-500 text-sm font-medium tracking-wide">La app del corito café.</p>
       </div>
       
-      <!-- ✨ UPGRADED: Premium high-contrast button with native iOS active click scaling -->
       <button id="login-btn" class="w-full bg-zinc-100 text-zinc-950 font-bold py-4 rounded-2xl text-sm active:scale-[0.96] active:bg-zinc-200 transition-all duration-150 cursor-pointer shadow-xl flex items-center justify-center gap-3">
         <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/><path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
         Sign In with Google
@@ -52,7 +51,6 @@
 
   <!-- ==================== SCREEN 2: MAIN DASHBOARD ==================== -->
   <div id="app-screen" class="hidden flex-1 flex flex-col">
-    <!-- Premium Frosted Translucent Apple Top Header -->
     <header class="border-b border-zinc-900/60 px-6 py-5 flex justify-between items-center sticky top-0 bg-zinc-950/75 backdrop-blur-xl z-10">
       <div>
         <h2 class="text-2xl font-black tracking-tight text-zinc-100">Leaderboard</h2>
@@ -61,23 +59,29 @@
       <button id="signout-btn" class="text-xs text-zinc-400 font-semibold border border-zinc-800/80 px-3 py-2 rounded-xl active:bg-zinc-900 cursor-pointer transition-all duration-100">Sign Out</button>
     </header>
 
-    <!-- Scroll container with native iOS touch physics -->
-    <main class="flex-1 px-5 py-4 space-y-4 overflow-y-auto ios-scroll" id="cafe-list">
-      <div class="flex flex-col items-center justify-center py-20 space-y-2">
-        <div class="w-6 h-6 border-2 border-zinc-700 border-t-zinc-200 rounded-full animate-spin"></div>
-        <p class="text-zinc-500 text-xs tracking-wide">Syncing council records...</p>
+    <!-- ✨ UPGRADED: Flex layout allows the button to sit at the bottom naturally -->
+    <main class="flex-1 px-5 py-4 overflow-y-auto ios-scroll flex flex-col">
+      <div id="cafe-list" class="space-y-4">
+        <div class="flex flex-col items-center justify-center py-20 space-y-2">
+          <div class="w-6 h-6 border-2 border-zinc-700 border-t-zinc-200 rounded-full animate-spin"></div>
+          <p class="text-zinc-500 text-xs tracking-wide">Syncing council records...</p>
+        </div>
+      </div>
+      
+      <!-- ✨ NEW: Add Cafe Button at bottom of list -->
+      <div class="pt-6 pb-8 mt-auto">
+        <button id="open-add-modal-btn" class="w-full bg-zinc-900 border border-zinc-800 border-dashed text-zinc-400 font-bold py-4 rounded-2xl text-sm active:bg-zinc-800 transition-all cursor-pointer flex justify-center items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+          Add New Location
+        </button>
       </div>
     </main>
   </div>
 
   <!-- ==================== SCREEN 3: RATING PANEL ==================== -->
   <div id="rating-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md z-20 flex items-end justify-center">
-    <!-- Sliding Bottom Tray -->
     <div class="bg-zinc-900/95 w-full rounded-t-[2.5rem] p-6 space-y-6 max-w-md border-t border-zinc-800/80 max-h-[88vh] overflow-y-auto pb-12 ios-scroll shadow-2xl">
-      
-      <!-- Modal Accent Pill Bar -->
       <div class="w-12 h-1 bg-zinc-700/60 rounded-full mx-auto -mt-2 mb-2"></div>
-
       <div class="flex justify-between items-start">
         <div>
           <h3 id="modal-cafe-name" class="text-2xl font-black tracking-tight text-zinc-100">Cafe Name</h3>
@@ -85,18 +89,10 @@
         </div>
         <button id="close-modal-btn" class="text-zinc-400 text-xs font-bold bg-zinc-800/80 active:bg-zinc-700 px-4 py-2 rounded-full cursor-pointer transition-colors">Done</button>
       </div>
-
-      <!-- Live Group Scores Block -->
-      <div id="community-scores" class="grid grid-cols-2 gap-2.5 bg-zinc-950/80 p-4 rounded-2xl border border-zinc-800/40 shadow-inner">
-        <!-- Renders dynamically -->
-      </div>
-
+      <div id="community-scores" class="grid grid-cols-2 gap-2.5 bg-zinc-950/80 p-4 rounded-2xl border border-zinc-800/40 shadow-inner"></div>
       <div class="space-y-4">
         <h4 class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase">Your Personal Assessment</h4>
-        <div class="space-y-3.5" id="metric-sliders">
-          <!-- Interactive Sliders build dynamically here -->
-        </div>
-        
+        <div class="space-y-3.5" id="metric-sliders"></div>
         <button id="save-rating-btn" class="w-full bg-zinc-50 text-zinc-950 font-bold py-4 rounded-2xl text-sm active:scale-[0.97] active:bg-zinc-200 transition-all duration-150 cursor-pointer shadow-lg mt-4">
           Lock In Scores
         </button>
@@ -104,24 +100,47 @@
     </div>
   </div>
 
+  <!-- ==================== SCREEN 4: ADD CAFE PANEL ==================== -->
+  <!-- ✨ NEW: Slide up modal for creating a new cafe -->
+  <div id="add-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md z-30 flex items-end justify-center">
+    <div class="bg-zinc-900/95 w-full rounded-t-[2.5rem] p-6 space-y-6 max-w-md border-t border-zinc-800/80 shadow-2xl pb-12">
+      <div class="w-12 h-1 bg-zinc-700/60 rounded-full mx-auto -mt-2 mb-2"></div>
+      <div class="flex justify-between items-start">
+        <div>
+          <h3 class="text-2xl font-black tracking-tight text-zinc-100">New Location</h3>
+          <p class="text-zinc-500 text-xs font-medium mt-0.5">Submit a spot to the leaderboard.</p>
+        </div>
+        <button id="close-add-modal-btn" class="text-zinc-400 text-xs font-bold bg-zinc-800/80 active:bg-zinc-700 px-4 py-2 rounded-full cursor-pointer transition-colors">Cancel</button>
+      </div>
+      
+      <div class="space-y-4">
+        <input type="text" id="new-cafe-name" placeholder="e.g. Blue Bottle Coffee" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-5 py-4 text-base text-zinc-100 focus:outline-none focus:border-zinc-500 transition-colors placeholder:text-zinc-700" autocomplete="off">
+        
+        <button id="submit-cafe-btn" class="w-full bg-zinc-50 text-zinc-950 font-bold py-4 rounded-2xl text-sm active:scale-[0.97] active:bg-zinc-200 transition-all duration-150 cursor-pointer shadow-lg">
+          Add Location
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ==================== SYSTEM BACKEND CONNECTIONS ==================== -->
   <script type="module">
+    // ✨ NEW: 'addDoc' has been added to the imports below
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-    import { getFirestore, collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, setDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-    // 👇 ⚠️ PASTE YOUR SECURE FIREBASE CONFIG OBJECT KEYS BELOW ⚠️ 👇
-const firebaseConfig = {
-  apiKey: "AIzaSyAZ70ALdG7SIew7YfKNYN0gAivNjh9LD9E",
-  authDomain: "cafecult.firebaseapp.com",
-  databaseURL: "https://cafecult-default-rtdb.firebaseio.com",
-  projectId: "cafecult",
-  storageBucket: "cafecult.firebasestorage.app",
-  messagingSenderId: "23364687514",
-  appId: "1:23364687514:web:26b005e9a08be8c7dc7123",
-  measurementId: "G-MCL45X19P9"
-};
-    // ☝️ ⚠️ PASTE YOUR SECURE FIREBASE CONFIG OBJECT KEYS ABOVE ⚠️ ☝️
+    // 👇 YOUR SECURE FIREBASE CONFIG OBJECT KEYS 👇
+    const firebaseConfig = {
+      apiKey: "AIzaSyAZ70ALdG7SIew7YfKNYN0gAivNjh9LD9E",
+      authDomain: "cafecult.firebaseapp.com",
+      databaseURL: "https://cafecult-default-rtdb.firebaseio.com",
+      projectId: "cafecult",
+      storageBucket: "cafecult.firebasestorage.app",
+      messagingSenderId: "23364687514",
+      appId: "1:23364687514:web:26b005e9a08be8c7dc7123",
+      measurementId: "G-MCL45X19P9"
+    };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -148,11 +167,17 @@ const firebaseConfig = {
     const saveRatingBtn = document.getElementById('save-rating-btn');
     const userGreeting = document.getElementById('user-greeting');
 
+    // ✨ NEW: Add Cafe Modal Elements
+    const addModal = document.getElementById('add-modal');
+    const openAddModalBtn = document.getElementById('open-add-modal-btn');
+    const closeAddModalBtn = document.getElementById('close-add-modal-btn');
+    const submitCafeBtn = document.getElementById('submit-cafe-btn');
+    const newCafeNameInput = document.getElementById('new-cafe-name');
+
     onAuthStateChanged(auth, (user) => {
       if (user) {
         authScreen.classList.add('hidden');
         appScreen.classList.remove('hidden');
-        // Custom greeting pull based on user's google account profile
         userGreeting.textContent = `Welcome, ${user.displayName || 'Council Member'}`;
         loadAppDashboard();
       } else {
@@ -187,7 +212,6 @@ const firebaseConfig = {
       }
     }
 
-    // Dynamic aggregate map logic calculator
     function calculateAverages(ratingsObject) {
       const totals = { espresso: 0, cappuccino: 0, hotMatcha: 0, icedMatcha: 0 };
       const counts = { espresso: 0, cappuccino: 0, hotMatcha: 0, icedMatcha: 0 };
@@ -213,7 +237,6 @@ const firebaseConfig = {
         }
       });
       
-      // Calculate overall mathematical mean score for floating sorting ranks
       averages._overallSortScore = absoluteCount > 0 ? (absoluteSum / absoluteCount) : 0;
       return averages;
     }
@@ -225,7 +248,6 @@ const firebaseConfig = {
         return;
       }
 
-      // ✨ NEW: Dynamic Sorting Machine (Highest combined score bubbles straight to top)
       allCafesData.sort((a, b) => {
         const avgA = calculateAverages(a.ratings)._overallSortScore;
         const avgB = calculateAverages(b.ratings)._overallSortScore;
@@ -236,10 +258,8 @@ const firebaseConfig = {
         const averages = calculateAverages(cafe.ratings);
         const card = document.createElement('div');
         
-        // ✨ NEW: Native iOS responsive design active styling tags implemented
         card.className = "bg-zinc-900 border border-zinc-800/80 p-5 rounded-2xl space-y-4 active:bg-zinc-900/40 active:scale-[0.99] active:border-zinc-700/80 transition-all duration-100 cursor-pointer shadow-md";
         
-        // Show rank badge icon numbers dynamically based on sorting tier
         const rankColors = ["text-amber-400 bg-amber-500/10 border-amber-500/20", "text-zinc-300 bg-zinc-300/10 border-zinc-300/20", "text-amber-700 bg-amber-700/10 border-amber-700/20"];
         const rankBadgeClass = index < 3 ? rankColors[index] : "text-zinc-500 bg-zinc-800/20 border-zinc-800/30";
 
@@ -342,6 +362,37 @@ const firebaseConfig = {
       } finally {
         saveRatingBtn.disabled = false;
         saveRatingBtn.textContent = "Lock In Scores";
+      }
+    });
+
+    // ✨ NEW: Add Cafe Modal Triggers & Logic
+    openAddModalBtn.addEventListener('click', () => {
+      newCafeNameInput.value = '';
+      addModal.classList.remove('hidden');
+      // Slight delay to allow modal to render before focusing on the input
+      setTimeout(() => newCafeNameInput.focus(), 100); 
+    });
+
+    closeAddModalBtn.addEventListener('click', () => addModal.classList.add('hidden'));
+
+    submitCafeBtn.addEventListener('click', async () => {
+      const name = newCafeNameInput.value.trim();
+      if (!name) return; // Prevent empty submissions
+
+      try {
+        submitCafeBtn.disabled = true;
+        submitCafeBtn.textContent = "Adding Location...";
+        
+        // Add to Firebase Collection
+        await addDoc(collection(db, 'cafes'), { name: name });
+        
+        addModal.classList.add('hidden');
+        await loadAppDashboard(); // Instantly refresh UI
+      } catch (err) {
+        alert("Failed to add location. Check Firebase Rules! Error: " + err.message);
+      } finally {
+        submitCafeBtn.disabled = false;
+        submitCafeBtn.textContent = "Add Location";
       }
     });
   </script>
