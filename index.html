@@ -12,13 +12,10 @@
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   
   <style>
-    /* ✨ PREMIUM NATIVE APP ARCHITECTURE ✨ */
     :root {
       --sat: env(safe-area-inset-top);
       --sab: env(safe-area-inset-bottom);
     }
-
-    /* 1. Completely lock the viewport so it never bounces */
     html, body {
       height: 100dvh;
       width: 100vw;
@@ -28,21 +25,17 @@
       -webkit-user-select: none;
       user-select: none;
     }
-
-    /* 2. Only allow specific internal containers to scroll */
     .ios-scroll {
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior-y: contain;
     }
-
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
 <body class="bg-zinc-950 text-zinc-50 font-sans flex flex-col antialiased selection:bg-zinc-800">
 
-  <!-- ==================== SCREEN 1: LOGIN ==================== -->
   <div id="auth-screen" class="flex-1 flex flex-col justify-center px-8 h-full w-full">
     <div class="max-w-sm w-full mx-auto space-y-8 text-center -mt-10">
       <div class="space-y-3">
@@ -58,9 +51,7 @@
     </div>
   </div>
 
-  <!-- ==================== SCREEN 2: MAIN DASHBOARD ==================== -->
   <div id="app-screen" class="hidden flex-1 flex flex-col h-full w-full">
-    <!-- ✨ UPGRADED: Header is now a static block that calculates the iPhone Notch padding perfectly -->
     <header class="flex-shrink-0 border-b border-zinc-900/60 px-6 py-4 flex justify-between items-end bg-zinc-950/75 backdrop-blur-xl z-10" style="padding-top: max(var(--sat), 1rem);">
       <div class="pt-2">
         <h2 class="text-2xl font-black tracking-tight text-zinc-100 leading-none">Leaderboard</h2>
@@ -69,12 +60,11 @@
       <button id="signout-btn" class="text-xs text-zinc-400 font-semibold border border-zinc-800/80 px-3 py-1.5 rounded-xl active:bg-zinc-900 cursor-pointer transition-all duration-100">Sign Out</button>
     </header>
 
-    <!-- ✨ UPGRADED: This is now the ONLY part of the screen allowed to scroll -->
     <main class="flex-1 px-5 pt-4 ios-scroll flex flex-col" style="padding-bottom: max(var(--sab), 2rem);">
       <div id="cafe-list" class="space-y-4">
         <div class="flex flex-col items-center justify-center py-20 space-y-2">
           <div class="w-6 h-6 border-2 border-zinc-700 border-t-zinc-200 rounded-full animate-spin"></div>
-          <p class="text-zinc-500 text-xs tracking-wide">Finding cult members...</p>
+          <p class="text-zinc-500 text-xs tracking-wide">Syncing council records...</p>
         </div>
       </div>
       
@@ -87,29 +77,25 @@
     </main>
   </div>
 
-  <!-- ==================== SCREEN 3: RATING PANEL ==================== -->
   <div id="rating-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md z-20 flex items-end justify-center">
-    <!-- ✨ UPGRADED: Bottom padding ensures the button never sits under the iPhone home swipe bar -->
     <div class="bg-zinc-900/95 w-full rounded-t-[2.5rem] p-6 space-y-5 max-w-md border-t border-zinc-800/80 max-h-[92dvh] flex flex-col shadow-2xl">
       
-      <!-- Static Modal Header -->
       <div class="flex-shrink-0 space-y-4">
         <div class="w-12 h-1 bg-zinc-700/60 rounded-full mx-auto -mt-2"></div>
         <div class="flex justify-between items-start">
           <div>
             <h3 id="modal-cafe-name" class="text-2xl font-black tracking-tight text-zinc-100">Cafe Name</h3>
-            <p class="text-zinc-500 text-xs font-medium mt-0.5">Global Cult Summary</p>
+            <p class="text-zinc-500 text-xs font-medium mt-0.5">Global Council Summary</p>
           </div>
           <button id="close-modal-btn" class="text-zinc-400 text-xs font-bold bg-zinc-800/80 active:bg-zinc-700 px-4 py-2 rounded-full cursor-pointer transition-colors">Done</button>
         </div>
       </div>
 
-      <!-- Scrollable Inner Content -->
       <div class="flex-1 ios-scroll hide-scrollbar space-y-5" style="padding-bottom: max(var(--sab), 1rem);">
         <div id="community-scores" class="grid grid-cols-2 gap-2.5 bg-zinc-950/80 p-4 rounded-2xl border border-zinc-800/40 shadow-inner"></div>
 
         <div class="space-y-2.5 pt-1">
-          <h4 class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase">Cult Verdicts</h4>
+          <h4 class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase">Council Verdicts</h4>
           <div id="council-verdicts-list" class="flex gap-3 overflow-x-auto pb-1 ios-scroll hide-scrollbar snap-x snap-mandatory"></div>
         </div>
 
@@ -136,7 +122,6 @@
     </div>
   </div>
 
-  <!-- ==================== SCREEN 4: ADD CAFE PANEL ==================== -->
   <div id="add-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md z-30 flex items-end justify-center">
     <div class="bg-zinc-900/95 w-full rounded-t-[2.5rem] p-6 space-y-6 max-w-md border-t border-zinc-800/80 shadow-2xl" style="padding-bottom: max(var(--sab), 2rem);">
       <div class="w-12 h-1 bg-zinc-700/60 rounded-full mx-auto -mt-2 mb-2"></div>
@@ -156,7 +141,6 @@
     </div>
   </div>
 
-  <!-- ==================== SCREEN 5: ACCESSIBLE PREMIUM LIGHTBOX ==================== -->
   <div id="lightbox-modal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-xl z-50 flex items-center justify-center p-4 animate-fade-in" role="dialog" aria-modal="true" aria-label="Image viewer">
     <div class="absolute inset-0" id="lightbox-backplate"></div>
     <button id="close-lightbox-btn" class="absolute top-12 right-6 w-11 h-11 bg-zinc-900/80 border border-zinc-800 text-zinc-200 font-bold rounded-full flex items-center justify-center active:scale-95 transition-all cursor-pointer z-10 shadow-lg" aria-label="Close full screen view">
@@ -168,7 +152,6 @@
     </div>
   </div>
 
-  <!-- ==================== SYSTEM BACKEND CONNECTIONS ==================== -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
@@ -193,11 +176,13 @@
     let currentCafeId = null;
     let allCafesData = [];
 
+    // ✨ UPDATED: Added a dedicated "short" label for the top summary grid!
+    // The "id" stays exactly the same so we don't break the old database numbers.
     const metrics = [
-      { id: 'espresso', label: '☕ Espresso' },
-      { id: 'cappuccino', label: '🥛 Cappuccino' },
-      { id: 'hotMatcha', label: '🍵 Hot Matcha' },
-      { id: 'icedMatcha', label: '🧊 Iced Matcha' }
+      { id: 'espresso', label: '☕ Espresso', short: 'Espresso' },
+      { id: 'cappuccino', label: '🥛 Cappuccino', short: 'Cappuccino' },
+      { id: 'hotMatcha', label: '🍵 Matcha Latte', short: 'Matcha Latte' }, 
+      { id: 'icedMatcha', label: '🧊 Iced Matcha', short: 'Iced Matcha' }
     ];
 
     const authScreen = document.getElementById('auth-screen');
@@ -229,7 +214,7 @@
       if (user) {
         authScreen.classList.add('hidden');
         appScreen.classList.remove('hidden');
-        userGreeting.textContent = `Welcome, ${user.displayName || 'Cult Member'}`;
+        userGreeting.textContent = `Welcome, ${user.displayName || 'Council Member'}`;
         loadAppDashboard();
       } else {
         authScreen.classList.remove('hidden');
@@ -367,8 +352,7 @@
         const score = averages[m.id] ? averages[m.id].toFixed(1) : null;
         communityBox.innerHTML += `
           <div class="text-center p-1.5 py-2 rounded-xl bg-zinc-900/40 border border-zinc-900">
-            <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">${m.label.split(' ')[1] || m.label}</p>
-            <p class="text-base font-black ${score ? 'text-zinc-100' : 'text-zinc-700 italic text-sm mt-0.5'}">${score || 'None'}</p>
+            <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">${m.short}</p> <p class="text-base font-black ${score ? 'text-zinc-100' : 'text-zinc-700 italic text-sm mt-0.5'}">${score || 'None'}</p>
           </div>
         `;
       });
@@ -536,7 +520,7 @@
           try {
             await addDoc(collection(db, `cafes/${currentCafeId}/photos`), {
               url: compressedBase64,
-              userName: auth.currentUser.displayName || 'Cult Member',
+              userName: auth.currentUser.displayName || 'Council Member',
               uid: auth.currentUser.uid, 
               createdAt: new Date().toISOString()
             });
@@ -591,7 +575,7 @@
       
       const payload = { 
         updatedAt: new Date().toISOString(),
-        userName: auth.currentUser.displayName || 'Cult Member' 
+        userName: auth.currentUser.displayName || 'Council Member' 
       };
 
       metrics.forEach(m => {
@@ -600,7 +584,7 @@
 
       try {
         saveRatingBtn.disabled = true;
-        saveRatingBtn.textContent = "Syncing Cult Matrix...";
+        saveRatingBtn.textContent = "Syncing Council Matrix...";
         await setDoc(doc(db, `cafes/${currentCafeId}/ratings`, myUid), payload, { merge: true });
         ratingModal.classList.add('hidden');
         await loadAppDashboard(); 
