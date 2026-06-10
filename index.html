@@ -74,7 +74,7 @@
       <div id="cafe-list" class="space-y-4">
         <div class="flex flex-col items-center justify-center py-20 space-y-2">
           <div class="w-6 h-6 border-2 border-zinc-700 border-t-zinc-200 rounded-full animate-spin"></div>
-          <p class="text-zinc-500 text-xs tracking-wide">Syncing council records...</p>
+          <p class="text-zinc-500 text-xs tracking-wide">Finding cult members...</p>
         </div>
       </div>
       
@@ -98,7 +98,7 @@
         <div class="flex justify-between items-start">
           <div>
             <h3 id="modal-cafe-name" class="text-2xl font-black tracking-tight text-zinc-100">Cafe Name</h3>
-            <p class="text-zinc-500 text-xs font-medium mt-0.5">Global Council Summary</p>
+            <p class="text-zinc-500 text-xs font-medium mt-0.5">Global Cult Summary</p>
           </div>
           <button id="close-modal-btn" class="text-zinc-400 text-xs font-bold bg-zinc-800/80 active:bg-zinc-700 px-4 py-2 rounded-full cursor-pointer transition-colors">Done</button>
         </div>
@@ -109,7 +109,7 @@
         <div id="community-scores" class="grid grid-cols-2 gap-2.5 bg-zinc-950/80 p-4 rounded-2xl border border-zinc-800/40 shadow-inner"></div>
 
         <div class="space-y-2.5 pt-1">
-          <h4 class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase">Council Verdicts</h4>
+          <h4 class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase">Cult Verdicts</h4>
           <div id="council-verdicts-list" class="flex gap-3 overflow-x-auto pb-1 ios-scroll hide-scrollbar snap-x snap-mandatory"></div>
         </div>
 
@@ -229,7 +229,7 @@
       if (user) {
         authScreen.classList.add('hidden');
         appScreen.classList.remove('hidden');
-        userGreeting.textContent = `Welcome, ${user.displayName || 'Council Member'}`;
+        userGreeting.textContent = `Welcome, ${user.displayName || 'Cult Member'}`;
         loadAppDashboard();
       } else {
         authScreen.classList.remove('hidden');
@@ -536,7 +536,7 @@
           try {
             await addDoc(collection(db, `cafes/${currentCafeId}/photos`), {
               url: compressedBase64,
-              userName: auth.currentUser.displayName || 'Council Member',
+              userName: auth.currentUser.displayName || 'Cult Member',
               uid: auth.currentUser.uid, 
               createdAt: new Date().toISOString()
             });
@@ -591,7 +591,7 @@
       
       const payload = { 
         updatedAt: new Date().toISOString(),
-        userName: auth.currentUser.displayName || 'Council Member' 
+        userName: auth.currentUser.displayName || 'Cult Member' 
       };
 
       metrics.forEach(m => {
@@ -600,7 +600,7 @@
 
       try {
         saveRatingBtn.disabled = true;
-        saveRatingBtn.textContent = "Syncing Council Matrix...";
+        saveRatingBtn.textContent = "Syncing Cult Matrix...";
         await setDoc(doc(db, `cafes/${currentCafeId}/ratings`, myUid), payload, { merge: true });
         ratingModal.classList.add('hidden');
         await loadAppDashboard(); 
