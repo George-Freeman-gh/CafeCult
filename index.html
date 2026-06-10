@@ -147,8 +147,7 @@
 
         <div class="space-y-4">
           <h3 class="text-xs font-bold tracking-widest text-zinc-500 uppercase border-b border-zinc-900 pb-2">Personal Decrees</h3>
-          <div id="personal-decrees-list" class="space-y-3">
-            </div>
+          <div id="personal-decrees-list" class="space-y-3"></div>
         </div>
       </div>
 
@@ -179,6 +178,7 @@
           <button id="close-modal-btn" class="text-zinc-400 text-xs font-bold bg-zinc-800/80 active:bg-zinc-700 px-4 py-2 rounded-full cursor-pointer transition-colors">Done</button>
         </div>
       </div>
+      
       <div class="flex-1 ios-scroll hide-scrollbar space-y-5" style="padding-bottom: max(var(--sab), 1rem);">
         <div id="community-scores" class="grid grid-cols-2 gap-2.5 bg-zinc-950/80 p-4 rounded-2xl border border-zinc-800/40 shadow-inner"></div>
         
@@ -197,6 +197,30 @@
             </button>
             <div id="photo-gallery-list" class="flex gap-3"></div>
           </div>
+        </div>
+
+        <div class="space-y-3 pt-3 border-t border-zinc-800/50">
+          <h4 class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase">Cult Commentary</h4>
+          
+          <div class="bg-zinc-950/60 border border-zinc-800/50 rounded-2xl p-3 flex flex-col gap-2 relative focus-within:border-zinc-700 transition-colors">
+            <textarea id="comment-input" rows="1" placeholder="Leave your tasting notes..." class="w-full bg-transparent text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none resize-none hide-scrollbar overflow-hidden" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+            
+            <div id="comment-image-preview-container" class="hidden relative w-16 h-16 rounded-xl overflow-hidden border border-zinc-800 mt-1">
+               <img id="comment-image-preview" src="" class="w-full h-full object-cover">
+               <button id="remove-comment-image-btn" class="absolute top-1 right-1 w-5 h-5 bg-black/70 text-white rounded-full flex items-center justify-center text-[10px] active:bg-black transition-colors">×</button>
+            </div>
+
+            <div class="flex justify-between items-center pt-2 border-t border-zinc-800/50 mt-1">
+              <input type="file" id="comment-photo-input" accept="image/*" class="hidden">
+              <button id="trigger-comment-photo" class="text-zinc-500 hover:text-amber-400 active:scale-95 transition-all p-1 flex items-center gap-1.5 cursor-pointer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <span class="text-[9px] font-bold uppercase tracking-wider">Attach</span>
+              </button>
+              <button id="post-comment-btn" class="bg-amber-500 text-zinc-950 text-[10px] font-bold px-4 py-1.5 rounded-lg active:scale-95 transition-all cursor-pointer shadow-md disabled:opacity-50 disabled:active:scale-100">Post</button>
+            </div>
+          </div>
+
+          <div id="comments-list" class="space-y-3 mt-4"></div>
         </div>
 
         <div class="space-y-4 pt-3 border-t border-zinc-800/50">
@@ -342,6 +366,7 @@
     let currentCafeId = null;
     let allCafesData = [];
     let allUsersData = {}; 
+    let selectedCommentImageBase64 = null; // ✨ NEW: State for comment photo
 
     const metrics = [
       { id: 'espresso', label: '☕ Espresso', short: 'Espresso' },
@@ -378,6 +403,16 @@
     const closeAddModalBtn = document.getElementById('close-add-modal-btn');
     const submitCafeBtn = document.getElementById('submit-cafe-btn');
     const newCafeNameInput = document.getElementById('new-cafe-name');
+    
+    // ✨ NEW: Comment Elements
+    const commentInput = document.getElementById('comment-input');
+    const commentImagePreviewContainer = document.getElementById('comment-image-preview-container');
+    const commentImagePreview = document.getElementById('comment-image-preview');
+    const removeCommentImageBtn = document.getElementById('remove-comment-image-btn');
+    const commentPhotoInput = document.getElementById('comment-photo-input');
+    const triggerCommentPhoto = document.getElementById('trigger-comment-photo');
+    const postCommentBtn = document.getElementById('post-comment-btn');
+    const commentsList = document.getElementById('comments-list');
     
     const petitionModal = document.getElementById('petition-modal');
     const openPetitionModalBtn = document.getElementById('open-petition-modal-btn');
@@ -644,7 +679,6 @@
       const verdictsList = document.getElementById('council-verdicts-list');
       verdictsList.innerHTML = '';
       const ratingKeys = Object.keys(cafe.ratings);
-      
       let validCardsHtml = '';
 
       ratingKeys.forEach(uid => {
@@ -691,7 +725,15 @@
         verdictsList.innerHTML = validCardsHtml;
       }
 
+      // ✨ NEW: Reset Comment Form
+      commentInput.value = '';
+      commentInput.style.height = ''; 
+      selectedCommentImageBase64 = null;
+      commentImagePreviewContainer.classList.add('hidden');
+      commentImagePreview.src = '';
+      
       loadCafeGallery(cafeId);
+      loadCafeComments(cafeId);
 
       const sliderContainer = document.getElementById('metric-sliders');
       sliderContainer.innerHTML = '';
@@ -729,6 +771,174 @@
       ratingModal.classList.add('flex'); 
     }
 
+    // ==================== ✨ CULT COMMENTARY LOGIC ====================
+    triggerCommentPhoto.addEventListener('click', () => commentPhotoInput.click());
+    
+    commentPhotoInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0]; 
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas'); 
+          let w = img.width; let h = img.height; const m = 800; // Standard gallery size
+          if (w > h) { if (w > m) { h *= m / w; w = m; } } else { if (h > m) { w *= m / h; h = m; } }
+          canvas.width = w; canvas.height = h; 
+          const ctx = canvas.getContext('2d'); 
+          ctx.drawImage(img, 0, 0, w, h);
+          
+          selectedCommentImageBase64 = canvas.toDataURL('image/jpeg', 0.8);
+          commentImagePreview.src = selectedCommentImageBase64;
+          commentImagePreviewContainer.classList.remove('hidden');
+          commentPhotoInput.value = ''; 
+        }; 
+        img.src = event.target.result;
+      }; 
+      reader.readAsDataURL(file);
+    });
+
+    removeCommentImageBtn.addEventListener('click', () => {
+      selectedCommentImageBase64 = null;
+      commentImagePreviewContainer.classList.add('hidden');
+      commentImagePreview.src = '';
+    });
+
+    postCommentBtn.addEventListener('click', async () => {
+      const text = commentInput.value.trim();
+      if (!text && !selectedCommentImageBase64) return;
+      
+      try {
+        postCommentBtn.disabled = true;
+        postCommentBtn.textContent = "Posting...";
+
+        let attachedPhotoId = null;
+        let attachedPhotoUrl = null;
+
+        // Step 1: Upload image to gallery first (if attached)
+        if (selectedCommentImageBase64) {
+          const photoRef = await addDoc(collection(db, `cafes/${currentCafeId}/photos`), {
+            url: selectedCommentImageBase64, 
+            userName: auth.currentUser.displayName || 'Acolyte', 
+            uid: auth.currentUser.uid, 
+            createdAt: new Date().toISOString(),
+            isCommentAttachment: true // ✨ Prevents direct deletion from gallery
+          });
+          attachedPhotoId = photoRef.id;
+          attachedPhotoUrl = selectedCommentImageBase64;
+        }
+
+        // Step 2: Upload the Comment
+        const uData = allUsersData[auth.currentUser.uid] || {};
+        await addDoc(collection(db, `cafes/${currentCafeId}/comments`), {
+          text: text,
+          uid: auth.currentUser.uid,
+          userName: auth.currentUser.displayName || 'Acolyte',
+          userPhotoURL: uData.photoURL || null,
+          attachedPhotoId: attachedPhotoId,
+          attachedPhotoUrl: attachedPhotoUrl,
+          createdAt: new Date().toISOString()
+        });
+
+        // Reset UI & Refresh
+        commentInput.value = '';
+        commentInput.style.height = ''; 
+        selectedCommentImageBase64 = null;
+        commentImagePreviewContainer.classList.add('hidden');
+        commentImagePreview.src = '';
+        
+        await loadCafeComments(currentCafeId);
+        if (attachedPhotoId) await loadCafeGallery(currentCafeId);
+
+      } catch (err) {
+        alert("Failed to post: " + err.message);
+      } finally {
+        postCommentBtn.disabled = false;
+        postCommentBtn.textContent = "Post";
+      }
+    });
+
+    async function loadCafeComments(cafeId) {
+      commentsList.innerHTML = `<div class="text-[10px] text-zinc-600 animate-pulse text-center py-2">Reading the decrees...</div>`;
+      try {
+        const snap = await getDocs(query(collection(db, `cafes/${cafeId}/comments`), orderBy('createdAt', 'desc')));
+        commentsList.innerHTML = '';
+        
+        if (snap.empty) {
+          commentsList.innerHTML = `<div class="text-[10px] text-zinc-600 italic py-2 text-center">No tasting notes left yet.</div>`;
+          return;
+        }
+
+        snap.forEach(docSnap => {
+          const data = docSnap.data();
+          const isMe = data.uid === auth.currentUser.uid;
+          
+          let avatarHtml = '';
+          // Ensure we pull the freshest avatar if they recently changed it
+          const freshUData = allUsersData[data.uid] || {};
+          const photoToUse = freshUData.photoURL || data.userPhotoURL;
+
+          if (photoToUse) {
+             avatarHtml = `<img src="${photoToUse}" class="w-6 h-6 rounded-full object-cover border ${isMe ? 'border-amber-500/50' : 'border-zinc-700/50'}">`;
+          } else {
+             avatarHtml = `<div class="w-6 h-6 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700/50 text-[10px] font-black flex items-center justify-center">${data.userName.charAt(0).toUpperCase()}</div>`;
+          }
+
+          let imageHtml = '';
+          if (data.attachedPhotoUrl) {
+             imageHtml = `
+               <div class="mt-2 w-20 h-20 rounded-xl overflow-hidden border border-zinc-800 cursor-pointer active:scale-95 transition-transform" onclick="document.getElementById('lightbox-img').src='${data.attachedPhotoUrl}'; document.getElementById('lightbox-caption').textContent='Attached by ${data.userName}'; document.getElementById('lightbox-modal').classList.remove('hidden'); setTimeout(() => document.getElementById('lightbox-img').classList.replace('scale-95', 'scale-100'), 50);">
+                 <img src="${data.attachedPhotoUrl}" class="w-full h-full object-cover">
+               </div>`;
+          }
+
+          const deleteHtml = isMe ? `<button class="delete-comment-btn text-red-500/40 hover:text-red-500 active:text-red-500 text-[9px] font-bold uppercase tracking-wider transition-colors px-2 py-1 bg-red-500/5 rounded border border-red-500/10 cursor-pointer" data-id="${docSnap.id}" data-photoid="${data.attachedPhotoId || ''}">Delete</button>` : '';
+          const dateStr = new Date(data.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+          const div = document.createElement('div');
+          div.className = "bg-zinc-950/40 border border-zinc-800/50 rounded-2xl p-3 flex flex-col gap-2 shadow-sm";
+          div.innerHTML = `
+            <div class="flex justify-between items-start">
+              <div class="flex items-center gap-2.5">
+                ${avatarHtml}
+                <span class="text-xs font-bold ${isMe ? 'text-amber-400' : 'text-zinc-200'}">${data.userName}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-[9px] text-zinc-600 font-mono uppercase">${dateStr}</span>
+                ${deleteHtml}
+              </div>
+            </div>
+            ${data.text ? `<p class="text-xs text-zinc-400 leading-relaxed pl-8.5">${data.text.replace(/\n/g, '<br>')}</p>` : ''}
+            ${imageHtml ? `<div class="pl-8.5">${imageHtml}</div>` : ''}
+          `;
+
+          const delBtn = div.querySelector('.delete-comment-btn');
+          if (delBtn) {
+             delBtn.addEventListener('click', async () => {
+                if (confirm("Erase this decree from the records?")) {
+                   try {
+                      const photoId = delBtn.getAttribute('data-photoid');
+                      await deleteDoc(doc(db, `cafes/${cafeId}/comments`, docSnap.id));
+                      
+                      // Also incinerate the image from the gallery
+                      if (photoId) {
+                         await deleteDoc(doc(db, `cafes/${cafeId}/photos`, photoId));
+                         loadCafeGallery(cafeId); 
+                      }
+                      loadCafeComments(cafeId); 
+                   } catch(e) { alert("Failed to delete: " + e.message); }
+                }
+             });
+          }
+          commentsList.appendChild(div);
+        });
+      } catch(e) {
+        commentsList.innerHTML = `<div class="text-red-500/50 text-[10px] text-center">Sync Error</div>`;
+      }
+    }
+
+    // ==================== DRINK GALLERY LOGIC ====================
     async function loadCafeGallery(cafeId) {
       photoGalleryList.innerHTML = `<div class="text-zinc-600 text-[11px] animate-pulse py-10 pl-1">Loading gallery matrix...</div>`;
       try {
@@ -739,10 +949,15 @@
           const data = pDoc.data();
           const frame = document.createElement('div');
           frame.className = "flex-shrink-0 w-24 h-24 rounded-2xl bg-zinc-950 border border-zinc-800/60 overflow-hidden active:scale-95 transition-transform duration-100 cursor-pointer snap-start shadow-md relative group";
+          
+          // ✨ UPGRADED: Only show direct delete button if it wasn't attached to a comment.
+          const isOwner = data.uid === auth.currentUser.uid;
+          const showDeleteBtn = isOwner && !data.isCommentAttachment;
+
           frame.innerHTML = `
             <img src="${data.url}" alt="Drink captured by ${data.userName}" class="w-full h-full object-cover">
             <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-1 px-1.5 text-center text-[8px] text-zinc-400 font-bold truncate">${data.userName.split(' ')[0]}</div>
-            ${data.uid === auth.currentUser.uid ? `<button class="delete-photo-btn absolute top-1.5 right-1.5 w-6 h-6 bg-black/60 backdrop-blur-md border border-zinc-700/50 text-zinc-300 rounded-full flex items-center justify-center shadow-sm"><svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : ''}
+            ${showDeleteBtn ? `<button class="delete-photo-btn absolute top-1.5 right-1.5 w-6 h-6 bg-black/60 backdrop-blur-md border border-zinc-700/50 text-zinc-300 rounded-full flex items-center justify-center shadow-sm"><svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : ''}
           `;
           frame.addEventListener('click', async (e) => {
             if (e.target.closest('.delete-photo-btn')) {
@@ -771,7 +986,11 @@
           canvas.width = w; canvas.height = h; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
           try {
             await addDoc(collection(db, `cafes/${currentCafeId}/photos`), {
-              url: canvas.toDataURL('image/jpeg', 0.7), userName: auth.currentUser.displayName || 'Acolyte', uid: auth.currentUser.uid, createdAt: new Date().toISOString()
+              url: canvas.toDataURL('image/jpeg', 0.7), 
+              userName: auth.currentUser.displayName || 'Acolyte', 
+              uid: auth.currentUser.uid, 
+              createdAt: new Date().toISOString(),
+              isCommentAttachment: false // Direct gallery uploads
             }); await loadCafeGallery(currentCafeId);
           } catch (err) { alert("Upload failed: " + err.message); } 
           finally { addPhotoTrigger.disabled = false; addPhotoTrigger.innerHTML = originalBtn; photoInput.value = ''; }
@@ -883,14 +1102,13 @@
       }
     });
 
-    // ==================== ✨ INSTALL TUTORIAL POPUP ====================
+    // ==================== INSTALL TUTORIAL POPUP ====================
     const installModal = document.getElementById('install-modal');
     const closeInstallModalBtn = document.getElementById('close-install-modal-btn');
 
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
-    // ✨ NEW: Dynamic Bottom Nav Padding Fix for Standalone PWA
     if (isStandalone) {
       const bottomNav = document.getElementById('bottom-nav');
       if (bottomNav) {
@@ -898,7 +1116,6 @@
       }
     }
 
-    // Modal Display Logic
     if (isIOS && !isStandalone) {
       const hasSeenInstallPrompt = localStorage.getItem('hasSeenInstallPrompt');
       if (!hasSeenInstallPrompt) {
