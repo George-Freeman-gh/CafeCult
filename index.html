@@ -14,7 +14,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   
   <style>
-    /* Premium Mobile Polish */
     body {
       -webkit-touch-callout: none;
       -webkit-user-select: none;
@@ -26,7 +25,6 @@
     .ios-scroll {
       -webkit-overflow-scrolling: touch;
     }
-    /* ✨ NEW: Hide scrollbars for the sleek horizontal slider */
     .hide-scrollbar::-webkit-scrollbar {
       display: none;
     }
@@ -83,7 +81,7 @@
 
   <!-- ==================== SCREEN 3: RATING PANEL ==================== -->
   <div id="rating-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md z-20 flex items-end justify-center">
-    <div class="bg-zinc-900/95 w-full rounded-t-[2.5rem] p-6 space-y-6 max-w-md border-t border-zinc-800/80 max-h-[92vh] overflow-y-auto pb-12 ios-scroll hide-scrollbar shadow-2xl">
+    <div class="bg-zinc-900/95 w-full rounded-t-[2.5rem] p-6 space-y-5 max-w-md border-t border-zinc-800/80 max-h-[92vh] overflow-y-auto pb-12 ios-scroll hide-scrollbar shadow-2xl">
       <div class="w-12 h-1 bg-zinc-700/60 rounded-full mx-auto -mt-2 mb-2"></div>
       
       <div class="flex justify-between items-start">
@@ -97,16 +95,32 @@
       <!-- Global Averages -->
       <div id="community-scores" class="grid grid-cols-2 gap-2.5 bg-zinc-950/80 p-4 rounded-2xl border border-zinc-800/40 shadow-inner"></div>
 
-      <!-- ✨ NEW: Friends / Council Verdicts Section -->
-      <div class="space-y-3 pt-1">
+      <!-- Council Verdicts Section -->
+      <div class="space-y-2.5 pt-1">
         <h4 class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase">Council Verdicts</h4>
-        <div id="council-verdicts-list" class="flex gap-3 overflow-x-auto pb-2 ios-scroll hide-scrollbar snap-x snap-mandatory">
-          <!-- User micro-cards injected here -->
+        <div id="council-verdicts-list" class="flex gap-3 overflow-x-auto pb-1 ios-scroll hide-scrollbar snap-x snap-mandatory"></div>
+      </div>
+
+      <!-- ✨ NEW: Drink Gallery Section (Horizontal Image Reel) -->
+      <div class="space-y-2.5 pt-1">
+        <h4 class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase">Drink Gallery</h4>
+        <div class="flex gap-3 overflow-x-auto pb-1 ios-scroll hide-scrollbar snap-x snap-mandatory">
+          <!-- Hidden Native Camera Activator Input -->
+          <input type="file" id="photo-input" accept="image/*" class="hidden">
+          
+          <!-- Add Photo Frame Box Trigger -->
+          <button id="add-photo-trigger" class="flex-shrink-0 w-24 h-24 rounded-2xl border border-dashed border-zinc-800 bg-zinc-950/30 active:bg-zinc-950/80 transition-all flex flex-col items-center justify-center gap-1 cursor-pointer snap-start text-zinc-500 hover:text-zinc-400">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12h12m-6-6v12"/></svg>
+            <span class="text-[10px] font-black tracking-wide uppercase">Upload</span>
+          </button>
+          
+          <!-- Dynamic Image Grid List Container Hook -->
+          <div id="photo-gallery-list" class="flex gap-3"></div>
         </div>
       </div>
 
       <!-- Personal Sliders -->
-      <div class="space-y-4 pt-2 border-t border-zinc-800/50">
+      <div class="space-y-4 pt-3 border-t border-zinc-800/50">
         <h4 class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase">Your Personal Assessment</h4>
         <div class="space-y-3.5" id="metric-sliders"></div>
         <button id="save-rating-btn" class="w-full bg-zinc-50 text-zinc-950 font-bold py-4 rounded-2xl text-sm active:scale-[0.97] active:bg-zinc-200 transition-all duration-150 cursor-pointer shadow-lg mt-4">
@@ -127,10 +141,8 @@
         </div>
         <button id="close-add-modal-btn" class="text-zinc-400 text-xs font-bold bg-zinc-800/80 active:bg-zinc-700 px-4 py-2 rounded-full cursor-pointer transition-colors">Cancel</button>
       </div>
-      
       <div class="space-y-4">
         <input type="text" id="new-cafe-name" placeholder="e.g. Blue Bottle Coffee" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-5 py-4 text-base text-zinc-100 focus:outline-none focus:border-zinc-500 transition-colors placeholder:text-zinc-700" autocomplete="off">
-        
         <button id="submit-cafe-btn" class="w-full bg-zinc-50 text-zinc-950 font-bold py-4 rounded-2xl text-sm active:scale-[0.97] active:bg-zinc-200 transition-all duration-150 cursor-pointer shadow-lg">
           Add Location
         </button>
@@ -138,11 +150,29 @@
     </div>
   </div>
 
+  <!-- ==================== ✨ NEW SCREEN 5: ACCESSIBLE PREMIUM LIGHTBOX ==================== -->
+  <div id="lightbox-modal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-xl z-50 flex items-center justify-center p-4 animate-fade-in" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <!-- Close Area Backplate for Tap-to-Dismiss Accessibility -->
+    <div class="absolute inset-0" id="lightbox-backplate"></div>
+    
+    <!-- Tactile Corner Close UI Circle Button -->
+    <button id="close-lightbox-btn" class="absolute top-12 right-6 w-11 h-11 bg-zinc-900/80 border border-zinc-800 text-zinc-200 font-bold rounded-full flex items-center justify-center active:scale-95 transition-all cursor-pointer z-10 shadow-lg" aria-label="Close full screen view">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+    
+    <!-- Image Display Container Frame -->
+    <div class="relative max-w-full max-h-[75vh] flex flex-col items-center justify-center select-none pointer-events-none">
+      <img id="lightbox-img" src="" alt="Enlarged gallery capture" class="max-w-full max-h-[70vh] rounded-2xl object-contain shadow-2xl border border-zinc-900 transition-transform duration-300 scale-95">
+      <!-- Author Text Sub-banner -->
+      <p id="lightbox-caption" class="text-center text-xs font-semibold text-zinc-400 mt-4 tracking-wide bg-zinc-900/50 border border-zinc-800/40 px-3 py-1.5 rounded-full backdrop-blur-md"></p>
+    </div>
+  </div>
+
   <!-- ==================== SYSTEM BACKEND CONNECTIONS ==================== -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-    import { getFirestore, collection, getDocs, doc, setDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, setDoc, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAZ70ALdG7SIew7YfKNYN0gAivNjh9LD9E",
@@ -185,6 +215,16 @@
     const closeAddModalBtn = document.getElementById('close-add-modal-btn');
     const submitCafeBtn = document.getElementById('submit-cafe-btn');
     const newCafeNameInput = document.getElementById('new-cafe-name');
+
+    // ✨ NEW: Gallery UI Element References
+    const photoInput = document.getElementById('photo-input');
+    const addPhotoTrigger = document.getElementById('add-photo-trigger');
+    const photoGalleryList = document.getElementById('photo-gallery-list');
+    const lightboxModal = document.getElementById('lightbox-modal');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxCaption = document.getElementById('lightbox-caption');
+    const closeLightboxBtn = document.getElementById('close-lightbox-btn');
+    const lightboxBackplate = document.getElementById('lightbox-backplate');
 
     onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -306,7 +346,7 @@
       });
     }
 
-    function openRatingModal(cafeId) {
+    async function openRatingModal(cafeId) {
       currentCafeId = cafeId;
       const cafe = allCafesData.find(c => c.id === cafeId);
       const myUid = auth.currentUser.uid;
@@ -328,7 +368,7 @@
         `;
       });
 
-      // ✨ NEW: 2. Render Council Verdicts (Individual Friends)
+      // 2. Render Council Verdicts
       const verdictsList = document.getElementById('council-verdicts-list');
       verdictsList.innerHTML = '';
       const ratingKeys = Object.keys(cafe.ratings);
@@ -352,7 +392,6 @@
             }
           });
 
-          // Style adjustments to make 'You' stand out subtly
           const highlightClass = isMe ? 'border-amber-500/20 bg-amber-500/5' : 'border-zinc-800/50 bg-zinc-900/60';
           const avatarClass = isMe ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-zinc-800 text-zinc-400 border-zinc-700/50';
 
@@ -370,7 +409,10 @@
         });
       }
 
-      // 3. Render Personal Assessment Sliders
+      // ✨ NEW: 3. Fetch & Render Dynamic Image Gallery Row
+      loadCafeGallery(cafeId);
+
+      // 4. Render Personal Assessment Sliders
       const sliderContainer = document.getElementById('metric-sliders');
       sliderContainer.innerHTML = '';
       metrics.forEach(m => {
@@ -397,13 +439,135 @@
       ratingModal.classList.remove('hidden');
     }
 
+    // ✨ NEW: Dedicated Gallery Subcollection Sync Loader Flow
+    async function loadCafeGallery(cafeId) {
+      photoGalleryList.innerHTML = `<div class="text-zinc-600 text-[11px] animate-pulse py-10 pl-1">Loading gallery matrix...</div>`;
+      try {
+        const querySnap = await getDocs(query(collection(db, `cafes/${cafeId}/photos`), orderBy('createdAt', 'desc')));
+        photoGalleryList.innerHTML = '';
+        
+        if (querySnap.empty) {
+          photoGalleryList.innerHTML = `<div class="text-[10px] text-zinc-600 italic flex items-center justify-center py-10 pl-2">No shots loaded yet.</div>`;
+          return;
+        }
+
+        querySnap.forEach(pDoc => {
+          const data = pDoc.data();
+          const frame = document.createElement('div');
+          frame.className = "flex-shrink-0 w-24 h-24 rounded-2xl bg-zinc-950 border border-zinc-800/60 overflow-hidden active:scale-95 transition-transform duration-100 cursor-pointer snap-start shadow-md relative group";
+          
+          frame.innerHTML = `
+            <img src="${data.url}" alt="Drink captured by ${data.userName}" class="w-full h-full object-cover">
+            <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-1 px-1.5 text-center text-[8px] text-zinc-400 font-bold truncate">
+              ${data.userName.split(' ')[0]}
+            </div>
+          `;
+          
+          // Wire Premium Lightbox Click Expansion Event
+          frame.addEventListener('click', () => {
+            openLightbox(data.url, `Shot by ${data.userName}`);
+          });
+          
+          photoGalleryList.appendChild(frame);
+        });
+      } catch (err) {
+        photoGalleryList.innerHTML = `<div class="text-red-500/50 text-[9px] py-10">Sync Error</div>`;
+        console.error(err);
+      }
+    }
+
+    // ✨ NEW: Ultra-polished Mobile Image Optimizer Engine
+    addPhotoTrigger.addEventListener('click', () => photoInput.click());
+
+    photoInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file || !currentCafeId) return;
+
+      const originalButtonContent = addPhotoTrigger.innerHTML;
+      addPhotoTrigger.disabled = true;
+      addPhotoTrigger.innerHTML = `<div class="w-4 h-4 border-2 border-zinc-600 border-t-zinc-300 rounded-full animate-spin"></div>`;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = async function() {
+          // HTML5 Canvas Multi-dimensional Downsampling Logic (Max 800px boundaries at 0.7 JPEG crunch)
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const max_size = 800;
+
+          if (width > height) {
+            if (width > max_size) { height *= max_size / width; width = max_size; }
+          } else {
+            if (height > max_size) { width *= max_size / height; height = max_size; }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+          try {
+            await addDoc(collection(db, `cafes/${currentCafeId}/photos`), {
+              url: compressedBase64,
+              userName: auth.currentUser.displayName || 'Council Member',
+              createdAt: new Date().toISOString()
+            });
+            await loadCafeGallery(currentCafeId);
+          } catch (err) {
+            alert("Upload permission failed: " + err.message);
+          } finally {
+            addPhotoTrigger.disabled = false;
+            addPhotoTrigger.innerHTML = originalButtonContent;
+            photoInput.value = ''; // Flush upload selector target hook
+          }
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // ✨ NEW: Accessible Lightbox Control Mechanics
+    function openLightbox(src, captionText) {
+      lightboxImg.src = src;
+      lightboxCaption.textContent = captionText;
+      lightboxModal.classList.remove('hidden');
+      
+      // Gentle delayed scaling animation entry effect
+      setTimeout(() => {
+        lightboxImg.classList.remove('scale-95');
+        lightboxImg.classList.add('scale-100');
+      }, 50);
+    }
+
+    function closeLightbox() {
+      lightboxImg.classList.remove('scale-100');
+      lightboxImg.classList.add('scale-95');
+      setTimeout(() => {
+        lightboxModal.classList.add('hidden');
+        lightboxImg.src = '';
+      }, 150);
+    }
+
+    closeLightboxBtn.addEventListener('click', closeLightbox);
+    lightboxBackplate.addEventListener('click', closeLightbox);
+    
+    // Accessibility Keyboard Escape-Key Binding
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !lightboxModal.classList.contains('hidden')) {
+        closeLightbox();
+      }
+    });
+
     closeModalBtn.addEventListener('click', () => ratingModal.classList.add('hidden'));
 
     saveRatingBtn.addEventListener('click', async () => {
       if (!currentCafeId) return;
       const myUid = auth.currentUser.uid;
       
-      // ✨ NEW: Saving the user's name to the database payload
       const payload = { 
         updatedAt: new Date().toISOString(),
         userName: auth.currentUser.displayName || 'Council Member' 
