@@ -181,7 +181,7 @@
     const metrics = [
       { id: 'espresso', label: '☕ Espresso' },
       { id: 'cappuccino', label: '🥛 Cappuccino' },
-      { id: 'hotMatcha', label: '🍵 Hot Matcha' },
+      { id: 'hotMatcha', label: '🍵 Matcha Latte' },
       { id: 'icedMatcha', label: '🧊 Iced Matcha' }
     ];
 
@@ -255,8 +255,8 @@
     }
 
     function calculateAverages(ratingsObject) {
-      const totals = { espresso: 0, cappuccino: 0, hotMatcha: 0, icedMatcha: 0 };
-      const counts = { espresso: 0, cappuccino: 0, hotMatcha: 0, icedMatcha: 0 };
+      const totals = { espresso: 0, cappuccino: 0, matchaLatee: 0, icedMatcha: 0 };
+      const counts = { espresso: 0, cappuccino: 0, MatchaLatee: 0, icedMatcha: 0 };
       
       Object.values(ratingsObject).forEach(userRating => {
         metrics.forEach(m => {
