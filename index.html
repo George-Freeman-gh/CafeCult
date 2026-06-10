@@ -135,7 +135,7 @@
         <div class="flex justify-between items-start">
           <div>
             <h3 id="modal-cafe-name" class="text-2xl font-black tracking-tight text-zinc-100">Cafe Name</h3>
-            <p class="text-zinc-500 text-xs font-medium mt-0.5">Global Council Summary</p>
+            <p class="text-zinc-500 text-xs font-medium mt-0.5">Global Cult Summary</p>
           </div>
           <button id="close-modal-btn" class="text-zinc-400 text-xs font-bold bg-zinc-800/80 active:bg-zinc-700 px-4 py-2 rounded-full cursor-pointer transition-colors">Done</button>
         </div>
@@ -144,7 +144,7 @@
         <div id="community-scores" class="grid grid-cols-2 gap-2.5 bg-zinc-950/80 p-4 rounded-2xl border border-zinc-800/40 shadow-inner"></div>
         
         <div class="space-y-2.5 pt-1">
-          <h4 class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase">Council Verdicts</h4>
+          <h4 class="text-[11px] font-bold tracking-widest text-zinc-500 uppercase">Cult Consensus</h4>
           <div id="council-verdicts-list" class="flex gap-3 overflow-x-auto pb-1 ios-scroll hide-scrollbar snap-x snap-mandatory"></div>
         </div>
 
@@ -244,9 +244,9 @@
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
     import { getFirestore, collection, getDocs, doc, setDoc, addDoc, deleteDoc, updateDoc, query, orderBy, deleteField } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-    const firebaseConfig = {
+const firebaseConfig = {
       apiKey: "AIzaSyAZ70ALdG7SIew7YfKNYN0gAivNjh9LD9E",
-      authDomain: "cafecult.firebaseapp.com",
+      authDomain: "https://cafecult.vercel.app/", // ✨ UPDATED: Point this to your Vercel URL
       databaseURL: "https://cafecult-default-rtdb.firebaseio.com",
       projectId: "cafecult",
       storageBucket: "cafecult.firebasestorage.app",
