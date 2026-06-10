@@ -107,14 +107,14 @@
 
   <div id="app-screen" class="hidden flex-1 flex flex-col h-full w-full relative">
     
-    <header class="flex-shrink-0 border-b border-zinc-900/60 px-5 py-4 flex justify-between items-end bg-zinc-950/75 backdrop-blur-xl z-10 gap-3" style="padding-top: max(var(--sat), 1rem);">
-      <div class="pt-1 flex-1 min-w-0">
-        <h2 id="header-title" class="text-2xl font-black tracking-tight text-zinc-100 leading-none transition-all truncate">Leaderboard</h2>
-        <p id="user-greeting" class="text-[11px] text-zinc-500 font-medium mt-1.5 truncate"></p>
+    <header class="flex-shrink-0 border-b border-zinc-900/60 px-5 py-4 flex justify-between items-center bg-zinc-950/75 backdrop-blur-xl z-10 gap-3" style="padding-top: max(var(--sat), 1rem);">
+      <div class="flex-1 pt-1">
+        <h2 id="header-title" class="text-xl font-black tracking-tight text-zinc-100 leading-none transition-all">Leaderboard</h2>
+        <p id="user-greeting" class="text-[10px] text-zinc-500 font-medium mt-1.5 leading-snug"></p>
       </div>
-      <div class="flex items-center gap-2 flex-shrink-0 pb-0.5">
-        <button id="admin-panel-btn" class="hidden text-amber-400 text-[11px] font-bold bg-amber-500/10 border border-amber-500/30 px-2.5 py-1.5 rounded-xl active:bg-amber-500/20 cursor-pointer transition-all duration-100">Cult Leader Desk</button>
-        <button id="signout-btn" class="text-[11px] text-zinc-400 font-semibold border border-zinc-800/80 px-2.5 py-1.5 rounded-xl active:bg-zinc-900 cursor-pointer transition-all duration-100">Sign Out</button>
+      <div class="flex items-center gap-1.5 flex-shrink-0">
+        <button id="admin-panel-btn" class="hidden text-amber-400 text-[10px] font-bold bg-amber-500/10 border border-amber-500/30 px-2 py-1.5 rounded-lg active:bg-amber-500/20 cursor-pointer transition-all duration-100">Cult Leader Desk</button>
+        <button id="signout-btn" class="text-[10px] text-zinc-400 font-semibold border border-zinc-800/80 px-2 py-1.5 rounded-lg active:bg-zinc-900 cursor-pointer transition-all duration-100">Sign Out</button>
       </div>
     </header>
 
@@ -154,7 +154,7 @@
 
     </main>
 
-    <nav class="absolute bottom-0 inset-x-0 bg-zinc-950/85 backdrop-blur-xl border-t border-zinc-900/80 z-40 flex justify-around items-center" style="padding-bottom: env(safe-area-inset-bottom);">
+    <nav id="bottom-nav" class="absolute bottom-0 inset-x-0 bg-zinc-950/85 backdrop-blur-xl border-t border-zinc-900/80 z-40 flex justify-around items-center" style="padding-bottom: env(safe-area-inset-bottom);">
       <button id="nav-leaderboard" class="flex-1 pt-3 pb-2 flex flex-col items-center gap-1 transition-all tab-active active:scale-95 cursor-pointer">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
         <span class="text-[9px] font-bold tracking-widest uppercase">Leaderboard</span>
@@ -323,7 +323,7 @@
 
     const firebaseConfig = {
       apiKey: "AIzaSyAZ70ALdG7SIew7YfKNYN0gAivNjh9LD9E",
-      authDomain: "cafecult.vercel.app",
+      authDomain: "cafecult.vercel.app", 
       databaseURL: "https://cafecult-default-rtdb.firebaseio.com",
       projectId: "cafecult",
       storageBucket: "cafecult.firebasestorage.app",
@@ -337,7 +337,6 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    // 👑 YOUR FOUNDER ID GOES HERE 👑
     const ADMIN_UID = "IHOLhwFCqDWJST30gi9Wpq11zDv1"; 
 
     let currentCafeId = null;
@@ -884,13 +883,22 @@
       }
     });
 
-    // ==================== INSTALL TUTORIAL POPUP ====================
+    // ==================== ✨ INSTALL TUTORIAL POPUP ====================
     const installModal = document.getElementById('install-modal');
     const closeInstallModalBtn = document.getElementById('close-install-modal-btn');
 
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
+    // ✨ NEW: Dynamic Bottom Nav Padding Fix for Standalone PWA
+    if (isStandalone) {
+      const bottomNav = document.getElementById('bottom-nav');
+      if (bottomNav) {
+        bottomNav.style.paddingBottom = '16px'; 
+      }
+    }
+
+    // Modal Display Logic
     if (isIOS && !isStandalone) {
       const hasSeenInstallPrompt = localStorage.getItem('hasSeenInstallPrompt');
       if (!hasSeenInstallPrompt) {
