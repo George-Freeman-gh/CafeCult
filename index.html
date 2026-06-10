@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -432,31 +433,46 @@
       verdictsList.innerHTML = '';
       const ratingKeys = Object.keys(cafe.ratings);
       
-      if (ratingKeys.length === 0) {
+      // ✨ NEW: Store valid cards before rendering
+      let validCardsHtml = '';
+
+      ratingKeys.forEach(uid => {
+        const r = cafe.ratings[uid];
+        let metricsHtml = '';
+        let hasValidRating = false;
+
+        // Check if the user actually has any scored drinks
+        metrics.forEach(m => {
+          if (r[m.id] !== undefined && parseFloat(r[m.id]) > 0) {
+             metricsHtml += `<div class="bg-zinc-950/60 rounded px-1.5 py-1 flex justify-between items-center border border-zinc-800/30"><span class="text-[10px]">${m.label.split(' ')[0]}</span><span class="text-zinc-300 font-bold">${parseFloat(r[m.id]).toFixed(1)}</span></div>`;
+             hasValidRating = true;
+          }
+        });
+
+        // ✨ NEW: If they have no valid ratings, skip them entirely!
+        if (!hasValidRating) return; 
+
+        const name = r.userName || 'Acolyte';
+        const initial = name.charAt(0).toUpperCase();
+        const isMe = uid === myUid;
+        const nameDisplay = isMe ? 'You' : name;
+        
+        validCardsHtml += `
+          <div class="flex-shrink-0 w-[140px] snap-start ${isMe ? 'border-amber-500/20 bg-amber-500/5' : 'border-zinc-800/50 bg-zinc-900/60'} border rounded-2xl p-3 flex flex-col gap-2.5 shadow-sm">
+            <div class="flex items-center gap-2 border-b border-zinc-800/40 pb-2">
+              <div class="w-6 h-6 rounded-full ${isMe ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-zinc-800 text-zinc-400 border-zinc-700/50'} text-[10px] font-black flex items-center justify-center border">${initial}</div>
+              <span class="text-xs font-bold ${isMe ? 'text-amber-400' : 'text-zinc-200'} truncate">${nameDisplay}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-1.5 text-[10px] font-medium text-zinc-500">${metricsHtml}</div>
+          </div>
+        `;
+      });
+
+      // ✨ NEW: Fallback if all cards were empty and skipped
+      if (validCardsHtml === '') {
         verdictsList.innerHTML = `<div class="text-xs text-zinc-600 italic px-2 py-2">No verdicts yet. Be the first to rate.</div>`;
       } else {
-        ratingKeys.forEach(uid => {
-          const r = cafe.ratings[uid];
-          const name = r.userName || 'Acolyte';
-          const initial = name.charAt(0).toUpperCase();
-          const isMe = uid === myUid;
-          const nameDisplay = isMe ? 'You' : name;
-          let metricsHtml = '';
-          metrics.forEach(m => {
-            if (r[m.id] !== undefined) {
-               metricsHtml += `<div class="bg-zinc-950/60 rounded px-1.5 py-1 flex justify-between items-center border border-zinc-800/30"><span class="text-[10px]">${m.label.split(' ')[0]}</span><span class="text-zinc-300 font-bold">${parseFloat(r[m.id]).toFixed(1)}</span></div>`;
-            }
-          });
-          verdictsList.innerHTML += `
-            <div class="flex-shrink-0 w-[140px] snap-start ${isMe ? 'border-amber-500/20 bg-amber-500/5' : 'border-zinc-800/50 bg-zinc-900/60'} border rounded-2xl p-3 flex flex-col gap-2.5 shadow-sm">
-              <div class="flex items-center gap-2 border-b border-zinc-800/40 pb-2">
-                <div class="w-6 h-6 rounded-full ${isMe ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-zinc-800 text-zinc-400 border-zinc-700/50'} text-[10px] font-black flex items-center justify-center border">${initial}</div>
-                <span class="text-xs font-bold ${isMe ? 'text-amber-400' : 'text-zinc-200'} truncate">${nameDisplay}</span>
-              </div>
-              <div class="grid grid-cols-2 gap-1.5 text-[10px] font-medium text-zinc-500">${metricsHtml}</div>
-            </div>
-          `;
-        });
+        verdictsList.innerHTML = validCardsHtml;
       }
 
       loadCafeGallery(cafeId);
@@ -560,19 +576,30 @@
       if (!currentCafeId) return;
       const payload = { updatedAt: new Date().toISOString(), userName: auth.currentUser.displayName || 'Acolyte' };
       
+      let hasAnyValidRating = false;
+
       metrics.forEach(m => { 
         const val = parseFloat(document.getElementById(`input-${m.id}`).value);
         if (val === 0) {
           payload[m.id] = deleteField();
         } else {
           payload[m.id] = val; 
+          hasAnyValidRating = true; // ✨ NEW: Mark that we found at least one real score
         }
       });
 
       try {
         saveRatingBtn.disabled = true; saveRatingBtn.textContent = "Syncing...";
-        await setDoc(doc(db, `cafes/${currentCafeId}/ratings`, auth.currentUser.uid), payload, { merge: true });
-        ratingModal.classList.add('hidden'); await loadAppDashboard(); 
+        
+        // ✨ NEW: If completely unrated, incinerate the document. Otherwise, save normally.
+        if (hasAnyValidRating) {
+          await setDoc(doc(db, `cafes/${currentCafeId}/ratings`, auth.currentUser.uid), payload, { merge: true });
+        } else {
+          await deleteDoc(doc(db, `cafes/${currentCafeId}/ratings`, auth.currentUser.uid));
+        }
+        
+        ratingModal.classList.add('hidden'); 
+        await loadAppDashboard(); 
       } catch (err) { alert("Error: " + err.message); } 
       finally { saveRatingBtn.disabled = false; saveRatingBtn.textContent = "Lock In Scores"; }
     });
