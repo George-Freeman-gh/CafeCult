@@ -39,47 +39,57 @@
     }
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-    /* ✨ UPGRADED: Hardware-Accelerated Mystic Animation */
-    @keyframes mysticEntrance {
-      0% {
-        transform: translateY(20px) scale(0.9);
-        opacity: 0;
-        filter: drop-shadow(0 0 0px rgba(251, 191, 36, 0));
-      }
-      60% {
-        transform: translateY(-5px) scale(1.03);
-        opacity: 1;
-        /* Flash of bright gold upon entry */
-        filter: drop-shadow(0 0 40px rgba(251, 191, 36, 1)); 
-      }
-      100% {
-        transform: translateY(0px) scale(1);
-        filter: drop-shadow(0 0 20px rgba(217, 119, 6, 0.5));
-      }
+    
+/* ✨ UPGRADED: Cinematic Reveal & Hardware-Safe OLED Glow */
+    @keyframes smoothReveal {
+      0% { opacity: 0; transform: translateY(15px); filter: blur(8px); }
+      100% { opacity: 1; transform: translateY(0px); filter: blur(0px); }
     }
 
-    @keyframes mysticFloat {
-      0%, 100% {
-        transform: translateY(0px) scale(1);
-        filter: drop-shadow(0 0 20px rgba(217, 119, 6, 0.5)); 
-      }
-      50% {
-        transform: translateY(-12px) scale(1.02);
-        /* Layered double-shadow forces iOS Safari to render a bright, thick aura */
-        filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.8)) drop-shadow(0 0 60px rgba(251, 191, 36, 0.4)); 
-      }
+    @keyframes gentleFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
     }
 
-    .animate-mystic {
-      /* Forces iOS hardware acceleration */
-      will-change: transform, filter;
-      -webkit-transform: translateZ(0);
-      /* 1.2s snappy entrance, immediately followed by the 6s infinite loop */
-      animation: 
-        mysticEntrance 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards,
-        mysticFloat 6s ease-in-out 1.2s infinite;
+    @keyframes ambientGlow {
+      0%, 100% { opacity: 0.5; transform: scale(0.95); }
+      50% { opacity: 0.95; transform: scale(1.15); }
     }
+
+    .premium-logo-container {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      margin-top: 0.5rem;
+      /* 2.5s slow, blurred cinematic entrance */
+      animation: smoothReveal 2.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    .premium-glow-orb {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      /* A literal ball of amber light behind the logo */
+      background: radial-gradient(circle, rgba(251, 191, 36, 0.5) 0%, rgba(217, 119, 6, 0) 70%);
+      filter: blur(15px);
+      border-radius: 50%;
+      z-index: 0;
+      /* Pulses opacity and size */
+      animation: ambientGlow 5s ease-in-out infinite;
+    }
+
+    .premium-logo {
+      position: relative;
+      z-index: 10;
+      width: 8rem;
+      height: 8rem;
+      object-fit: contain;
+      /* Slow, heavy levitation */
+      animation: gentleFloat 5s ease-in-out infinite;
+    }
+    
   </style>
 </head>
 <body class="bg-zinc-950 text-zinc-50 font-sans flex flex-col antialiased selection:bg-zinc-800">
