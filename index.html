@@ -245,7 +245,7 @@
 
     signoutBtn.addEventListener('click', () => signOut(auth));
 
-    async function loadAppDashboard() {
+async function loadAppDashboard() {
       try {
         const cafeSnap = await getDocs(collection(db, 'cafes'));
         allCafesData = [];
@@ -260,7 +260,14 @@
         }
         renderCafeCards();
       } catch (err) {
-        console.error("Error syncing platform data:", err);
+        // ✨ NEW: Forces the error to show up on your screen instead of failing silently
+        document.getElementById('cafe-list').innerHTML = `
+          <div class="flex flex-col items-center justify-center py-20 px-6 text-center space-y-4">
+            <div class="text-red-500 text-5xl">⚠️</div>
+            <p class="text-zinc-100 font-bold text-lg">Connection Blocked</p>
+            <p class="text-red-400 text-xs font-mono bg-red-500/10 p-4 rounded-xl border border-red-500/20">${err.message}</p>
+          </div>
+        `;
       }
     }
 
