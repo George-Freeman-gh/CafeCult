@@ -344,6 +344,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
     import { getFirestore, collection, getDocs, getDoc, doc, setDoc, addDoc, deleteDoc, updateDoc, query, orderBy, deleteField } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+    import { getStorage, ref, uploadString, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAZ70ALdG7SIew7YfKNYN0gAivNjh9LD9E",
@@ -359,6 +360,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    const storage = getStorage(app);
     const provider = new GoogleAuthProvider();
 
     const ADMIN_UID = "IHOLhwFCqDWJST30gi9Wpq11zDv1"; 
@@ -366,7 +368,7 @@
     let currentCafeId = null;
     let allCafesData = [];
     let allUsersData = {}; 
-    let selectedCommentImageBase64 = null; // ✨ NEW: State for comment photo
+    let selectedCommentImageBase64 = null; 
 
     const metrics = [
       { id: 'espresso', label: '☕ Espresso', short: 'Espresso' },
@@ -404,7 +406,6 @@
     const submitCafeBtn = document.getElementById('submit-cafe-btn');
     const newCafeNameInput = document.getElementById('new-cafe-name');
     
-    // ✨ NEW: Comment Elements
     const commentInput = document.getElementById('comment-input');
     const commentImagePreviewContainer = document.getElementById('comment-image-preview-container');
     const commentImagePreview = document.getElementById('comment-image-preview');
@@ -514,8 +515,12 @@
           const base64Image = canvas.toDataURL('image/jpeg', 0.8);
           
           try {
-            await updateDoc(doc(db, 'users', auth.currentUser.uid), { photoURL: base64Image });
-            profileAvatarImg.src = base64Image;
+            const storageRef = ref(storage, `users/${auth.currentUser.uid}/avatar.jpg`);
+            await uploadString(storageRef, base64Image, 'data_url');
+            const downloadURL = await getDownloadURL(storageRef);
+            
+            await updateDoc(doc(db, 'users', auth.currentUser.uid), { photoURL: downloadURL });
+            profileAvatarImg.src = downloadURL;
             await loadAppDashboard(); 
           } catch (err) { alert("Avatar upload failed: " + err.message); } 
           finally { 
@@ -725,7 +730,6 @@
         verdictsList.innerHTML = validCardsHtml;
       }
 
-      // ✨ NEW: Reset Comment Form
       commentInput.value = '';
       commentInput.style.height = ''; 
       selectedCommentImageBase64 = null;
@@ -771,7 +775,7 @@
       ratingModal.classList.add('flex'); 
     }
 
-    // ==================== ✨ CULT COMMENTARY LOGIC ====================
+    // ==================== CULT COMMENTARY LOGIC ====================
     triggerCommentPhoto.addEventListener('click', () => commentPhotoInput.click());
     
     commentPhotoInput.addEventListener('change', async (e) => {
@@ -783,7 +787,7 @@
         const img = new Image();
         img.onload = function() {
           const canvas = document.createElement('canvas'); 
-          let w = img.width; let h = img.height; const m = 800; // Standard gallery size
+          let w = img.width; let h = img.height; const m = 800;
           if (w > h) { if (w > m) { h *= m / w; w = m; } } else { if (h > m) { w *= m / h; h = m; } }
           canvas.width = w; canvas.height = h; 
           const ctx = canvas.getContext('2d'); 
@@ -815,21 +819,27 @@
 
         let attachedPhotoId = null;
         let attachedPhotoUrl = null;
+        let storagePath = null;
 
-        // Step 1: Upload image to gallery first (if attached)
         if (selectedCommentImageBase64) {
+          const imageId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
+          storagePath = `cafes/${currentCafeId}/comments/${imageId}.jpg`;
+          const storageRef = ref(storage, storagePath);
+          
+          await uploadString(storageRef, selectedCommentImageBase64, 'data_url');
+          attachedPhotoUrl = await getDownloadURL(storageRef);
+
           const photoRef = await addDoc(collection(db, `cafes/${currentCafeId}/photos`), {
-            url: selectedCommentImageBase64, 
+            url: attachedPhotoUrl, 
+            storagePath: storagePath, 
             userName: auth.currentUser.displayName || 'Acolyte', 
             uid: auth.currentUser.uid, 
             createdAt: new Date().toISOString(),
-            isCommentAttachment: true // ✨ Prevents direct deletion from gallery
+            isCommentAttachment: true 
           });
           attachedPhotoId = photoRef.id;
-          attachedPhotoUrl = selectedCommentImageBase64;
         }
 
-        // Step 2: Upload the Comment
         const uData = allUsersData[auth.currentUser.uid] || {};
         await addDoc(collection(db, `cafes/${currentCafeId}/comments`), {
           text: text,
@@ -841,7 +851,6 @@
           createdAt: new Date().toISOString()
         });
 
-        // Reset UI & Refresh
         commentInput.value = '';
         commentInput.style.height = ''; 
         selectedCommentImageBase64 = null;
@@ -874,11 +883,10 @@
           const data = docSnap.data();
           const isMe = data.uid === auth.currentUser.uid;
           
-          let avatarHtml = '';
-          // Ensure we pull the freshest avatar if they recently changed it
           const freshUData = allUsersData[data.uid] || {};
           const photoToUse = freshUData.photoURL || data.userPhotoURL;
 
+          let avatarHtml = '';
           if (photoToUse) {
              avatarHtml = `<img src="${photoToUse}" class="w-6 h-6 rounded-full object-cover border ${isMe ? 'border-amber-500/50' : 'border-zinc-700/50'}">`;
           } else {
@@ -921,9 +929,17 @@
                       const photoId = delBtn.getAttribute('data-photoid');
                       await deleteDoc(doc(db, `cafes/${cafeId}/comments`, docSnap.id));
                       
-                      // Also incinerate the image from the gallery
                       if (photoId) {
-                         await deleteDoc(doc(db, `cafes/${cafeId}/photos`, photoId));
+                         const photoDocRef = doc(db, `cafes/${cafeId}/photos`, photoId);
+                         const photoDocSnap = await getDoc(photoDocRef);
+                         
+                         if (photoDocSnap.exists()) {
+                            const photoData = photoDocSnap.data();
+                            if (photoData.storagePath) {
+                               await deleteObject(ref(storage, photoData.storagePath));
+                            }
+                            await deleteDoc(photoDocRef);
+                         }
                          loadCafeGallery(cafeId); 
                       }
                       loadCafeComments(cafeId); 
@@ -950,7 +966,6 @@
           const frame = document.createElement('div');
           frame.className = "flex-shrink-0 w-24 h-24 rounded-2xl bg-zinc-950 border border-zinc-800/60 overflow-hidden active:scale-95 transition-transform duration-100 cursor-pointer snap-start shadow-md relative group";
           
-          // ✨ UPGRADED: Only show direct delete button if it wasn't attached to a comment.
           const isOwner = data.uid === auth.currentUser.uid;
           const showDeleteBtn = isOwner && !data.isCommentAttachment;
 
@@ -963,7 +978,13 @@
             if (e.target.closest('.delete-photo-btn')) {
               e.stopPropagation(); 
               if (confirm("Permanently remove this photo?")) {
-                try { await deleteDoc(doc(db, `cafes/${cafeId}/photos`, pDoc.id)); await loadCafeGallery(cafeId); } 
+                try { 
+                  if (data.storagePath) {
+                    await deleteObject(ref(storage, data.storagePath));
+                  }
+                  await deleteDoc(doc(db, `cafes/${cafeId}/photos`, pDoc.id)); 
+                  await loadCafeGallery(cafeId); 
+                } 
                 catch (err) { alert("Delete failed: " + err.message); }
               }
             } else { openLightbox(data.url, `Shot by ${data.userName}`); }
@@ -976,7 +997,10 @@
     addPhotoTrigger.addEventListener('click', () => photoInput.click());
     photoInput.addEventListener('change', async (e) => {
       const file = e.target.files[0]; if (!file || !currentCafeId) return;
-      const originalBtn = addPhotoTrigger.innerHTML; addPhotoTrigger.disabled = true; addPhotoTrigger.innerHTML = `<div class="w-4 h-4 border-2 border-zinc-600 border-t-zinc-300 rounded-full animate-spin"></div>`;
+      const originalBtn = addPhotoTrigger.innerHTML; 
+      addPhotoTrigger.disabled = true; 
+      addPhotoTrigger.innerHTML = `<div class="w-4 h-4 border-2 border-zinc-600 border-t-zinc-300 rounded-full animate-spin"></div>`;
+      
       const reader = new FileReader();
       reader.onload = function(event) {
         const img = new Image();
@@ -984,14 +1008,25 @@
           const canvas = document.createElement('canvas'); let w = img.width; let h = img.height; const m = 800;
           if (w > h) { if (w > m) { h *= m / w; w = m; } } else { if (h > m) { w *= m / h; h = m; } }
           canvas.width = w; canvas.height = h; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
+          
+          const base64Image = canvas.toDataURL('image/jpeg', 0.7);
           try {
+            const imageId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
+            const storagePath = `cafes/${currentCafeId}/gallery/${imageId}.jpg`;
+            const storageRef = ref(storage, storagePath);
+            
+            await uploadString(storageRef, base64Image, 'data_url');
+            const downloadURL = await getDownloadURL(storageRef);
+
             await addDoc(collection(db, `cafes/${currentCafeId}/photos`), {
-              url: canvas.toDataURL('image/jpeg', 0.7), 
+              url: downloadURL, 
+              storagePath: storagePath, 
               userName: auth.currentUser.displayName || 'Acolyte', 
               uid: auth.currentUser.uid, 
               createdAt: new Date().toISOString(),
-              isCommentAttachment: false // Direct gallery uploads
-            }); await loadCafeGallery(currentCafeId);
+              isCommentAttachment: false 
+            }); 
+            await loadCafeGallery(currentCafeId);
           } catch (err) { alert("Upload failed: " + err.message); } 
           finally { addPhotoTrigger.disabled = false; addPhotoTrigger.innerHTML = originalBtn; photoInput.value = ''; }
         }; img.src = event.target.result;
